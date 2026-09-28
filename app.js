@@ -1,5 +1,5 @@
 import express from 'express';
-import { manejadorErrores } from './middlewares/manejadorErrores.js';
+import {manejadorErrores} from './src/middlewares/manejadorErrores.js';
 
 const app = express();
 app.use(express.json());
