@@ -7,3 +7,5 @@ export const crearArtesanoSchema = z.object({
     trayectoria: z.string().trim().min(1, "La trayectoria es obligatoria"),
     usuarioId: z.number().int().positive("El ID de usuario debe ser un número entero positivo"),
 });
+
+export const actualizarArtesanoSchema = crearArtesanoSchema.partial()

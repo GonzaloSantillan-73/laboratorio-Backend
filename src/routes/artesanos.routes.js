@@ -6,14 +6,18 @@ import {
     actualizarArtesanoId,
     eliminarArtesanoId
 } from '../controllers/artesanos.controllers.js'
-import { validarCreacionArtesano } from '../middlewares/artesano.middleware.js'
+import {
+    validarCreacionArtesano,
+    validarActualizacionArtesano
+} from '../middlewares/artesano.middleware.js'
+import { validarId } from "../middlewares/validarId.middleware.js";
 
 const router = Router()
 
 router.get('/', obtenerArtesanos)
-router.get('/:id', obtenerArtesanosPorId)
+router.get('/:id', validarId, obtenerArtesanosPorId)
 router.post('/', validarCreacionArtesano, crearArtesano)
-router.put('/:id', actualizarArtesanoId)
-router.delete('/:id', eliminarArtesanoId)
+router.put('/:id', validarId, validarActualizacionArtesano, actualizarArtesanoId)
+router.delete('/:id', validarId, eliminarArtesanoId)
 
 export default router
