@@ -40,7 +40,7 @@ export const obtenerArtesanosPorId = async (req, res, next) => {
 export const crearArtesano = async (req, res, next) => {
     try {
         const { localidad, nombreEmprendimiento, rubro, trayectoria, usuarioId } = req.body;
-        
+
         const usuarioExiste = await prisma.usuario.findUnique({
             where: { id: Number(usuarioId) }
         });
@@ -75,3 +75,47 @@ export const crearArtesano = async (req, res, next) => {
         return next(error);
     }
 };
+
+export const actualizarArtesanoId = async (req, res, next) => {
+    try {
+        const idArtesano = Number(req.params.id)
+        const { localidad, nombreEmprendimiento, rubro, trayectoria } = req.body;
+        const artesanoActualizado = await prisma.artesano.update({
+            where: { id: idArtesano },
+            data: {
+                localidad: localidad.trim(),
+                nombreEmprendimiento: nombreEmprendimiento.trim(),
+                rubro: rubro.trim(),
+                trayectoria: trayectoria.trim()
+            }
+        })
+        return res.json(artesanoActualizado)
+    } catch (error) {
+        if (error.code === "P2025") {
+            const errorNoEncontrado = new Error("El artesano no existe.");
+            errorNoEncontrado.status = 404;
+            return next(errorNoEncontrado);
+        }
+        return next(error);
+    }
+}
+
+export const eliminarArtesanoId = async (req, res, next) => {
+    try {
+        const id = Number(req.params.id)
+        const artesanoEliminado = await prisma.artesano.delete({
+            where: {id: id}
+        })
+        return res.json({
+            message: 'Artesano eliminado',
+            artesano: artesanoEliminado
+        })
+    } catch (error) {
+        if (error.code === "P2025") {
+            const errorNoEncontrado = new Error("El artesano no existe.");
+            errorNoEncontrado.status = 404;
+            return next(errorNoEncontrado);
+        }
+        return next(error);
+    }
+}
