@@ -1,6 +1,7 @@
 import express from 'express';
-import {manejadorErrores} from './src/middlewares/manejadorErrores.js';
+import { manejadorErrores } from './src/middlewares/manejadorErrores.js';
 import artesanosRoutes from './src/routes/artesanos.routes.js'
+import standRoutes from './src/routes/stand.routes.js'
 
 const app = express();
 app.use(express.json());
@@ -12,7 +13,8 @@ app.get('/', (req, res) => {
 });
 
 //rutas
-app.use('/artesanos',artesanosRoutes)
+app.use('/artesanos', artesanosRoutes)
+app.use('/api/stands', standRoutes);
 
 app.use((req, res, next) => {
     const error = new Error(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
