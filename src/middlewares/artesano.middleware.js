@@ -1,6 +1,7 @@
 import {
     crearArtesanoSchema,
-    actualizarArtesanoSchema
+    actualizarArtesanoSchema,
+    consultarArtesanosSchema
 } from "../validators/artesanos.schemas.js";
 
 export const validarCreacionArtesano = (req, res, next) => {
@@ -43,3 +44,18 @@ export const validarActualizacionArtesano = (req, res, next) => {
     req.body = resultado.data;
     return next();
 };*/
+
+
+export const validarConsultaArtesanos = (req, res, next) => {
+    const resultado = consultarArtesanosSchema.safeParse(req.query);
+
+    if (!resultado.success) {
+        return res.status(400).json({
+            mensaje: "Los parámetros de consulta son inválidos.",
+            errores: resultado.error.issues
+        });
+    }
+
+    req.consultaArtesanos = resultado.data;
+    return next();
+};

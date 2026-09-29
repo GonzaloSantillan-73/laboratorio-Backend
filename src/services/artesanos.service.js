@@ -82,3 +82,40 @@ export const eliminarArtesanoService = async (id) => {
         throw error;
     }
 };
+
+export const consultarArtesanosService = async (criteriosConsulta) => {
+    const { localidad, rubro, estadoSolicitud, ordenarPor, direccion, pagina, limite } = criteriosConsulta;
+    
+    const where = {};
+    if (localidad) {
+        where.localidad = { contains: localidad, mode: "insensitive" };
+    }
+    if (rubro) {
+        where.rubro = { contains: rubro, mode: "insensitive" };
+    }
+    if (estadoSolicitud) {
+        where.estadoSolicitud = estadoSolicitud;
+    }
+
+    const desplazamiento = (pagina - 1) * limite;
+
+    const [artesanos, total] = await prisma.$transaction([
+        prisma.artesano.findMany({
+            where,
+            orderBy: [{ [ordenarPor]: direccion }, { id: "asc" }],
+            skip: desplazamiento,
+            take: limite,
+            include: { usuario: true }
+        }),
+        prisma.artesano.count({ where })
+    ]);
+    return {
+        artesanos,
+        paginacion: {
+            pagina,
+            limite,
+            total,
+            totalPaginas: Math.ceil(total / limite)
+        }
+    };
+};

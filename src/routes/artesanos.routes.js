@@ -8,13 +8,14 @@ import {
 } from '../controllers/artesanos.controllers.js'
 import {
     validarCreacionArtesano,
-    validarActualizacionArtesano
+    validarActualizacionArtesano,
+    validarConsultaArtesanos
 } from '../middlewares/artesano.middleware.js'
 import { validarId } from "../middlewares/validarId.middleware.js";
 
 const router = Router()
 
-router.get('/', obtenerArtesanos)
+router.get('/', validarConsultaArtesanos, obtenerArtesanos);
 router.get('/:id', validarId, obtenerArtesanosPorId)
 router.post('/', validarCreacionArtesano, crearArtesano)
 router.put('/:id', validarId, validarActualizacionArtesano, actualizarArtesanoId)
