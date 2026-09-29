@@ -39,7 +39,7 @@ export const obtenerArtesanosPorId = async (req, res, next) => {
 
 export const crearArtesano = async (req, res, next) => {
     try {
-        const { estadoSolicitud, localidad, nombreEmprendimiento, rubro, trayectoria, usuarioId } = req.body;
+        const { localidad, nombreEmprendimiento, rubro, trayectoria, usuarioId } = req.body;
         
         const usuarioExiste = await prisma.usuario.findUnique({
             where: { id: Number(usuarioId) }
@@ -52,7 +52,7 @@ export const crearArtesano = async (req, res, next) => {
 
         const nuevoArtesano = await prisma.artesano.create({
             data: {
-                estadoSolicitud: estadoSolicitud.trim(),
+                estadoSolicitud: 'PENDIENTE',
                 localidad: localidad.trim(),
                 nombreEmprendimiento: nombreEmprendimiento.trim(),
                 rubro: rubro.trim(),
