@@ -52,19 +52,22 @@ model Artesano {
     stand     Stand?
 }
 
-model Stand {
-    id          Int      @id @default(autoincrement())
-    numero      String
-    pabellon    String
-    sector      String
-    coordenadas String
-    estado      String
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
 
-    artesanoId Int?      @unique
-    artesano   Artesano? @relation(fields: [artesanoId], references: [id], onDelete: SetNull)
+model Stand {
+    id         Int      @id @default(autoincrement())
+    pabellon   String  
+    sector     String  
+    coordenadaX Int     
+    coordenadaY Int    
+    estado     String   @default("DISPONIBLE")
+
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    artesanoId Int      @unique
+    artesano   Artesano @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
 }
+
 
 model Producto {
     id          Int      @id @default(autoincrement())
