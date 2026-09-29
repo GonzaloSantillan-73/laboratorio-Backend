@@ -44,7 +44,7 @@ model Artesano {
     trayectoria          String
     localidad            String
     rubro                String
-    estadoSolicitud      String
+    estadoSolicitud      String   @default("PENDIENTE")
     createdAt            DateTime @default(now())
     updatedAt            DateTime @updatedAt
 

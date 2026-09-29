@@ -46,8 +46,7 @@ export const crearArtesanoService = async (crearArtesanoDto) => {
             trayectoria,
             localidad,
             rubro,
-            usuarioId,
-            estadoSolicitud: "PENDIENTE"
+            usuarioId
         },
         include: { usuario: true },
     });
