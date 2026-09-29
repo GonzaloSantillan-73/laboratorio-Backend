@@ -4,74 +4,73 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+    provider = "prisma-client"
+    output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+    provider = "postgresql"
 }
 
-
 model Rol {
-  id       Int       @id @default(autoincrement())
-  nombre   String
-  usuarios Usuario[]
+    id       Int       @id @default(autoincrement())
+    nombre   String
+    usuarios Usuario[]
 }
 
 model Usuario {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
-  password  String
-  rolId     Int
-  rol       Rol        @relation(fields: [rolId], references: [id], onDelete: Restrict)
-  artesano  Artesano?
-  consultas Consulta[]
+    id        Int        @id @default(autoincrement())
+    email     String     @unique
+    password  String
+    rolId     Int
+    rol       Rol        @relation(fields: [rolId], references: [id], onDelete: Restrict)
+    artesano  Artesano?
+    consultas Consulta[]
 }
 
 model Artesano {
-  id                   Int        @id @default(autoincrement())
-  usuarioId            Int        @unique
-  usuario              Usuario    @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  nombreEmprendimiento String
-  trayectoria          String
-  localidad            String
-  rubro                String
-  estadoSolicitud      String
-  
-  productos            Producto[]
-  stand                Stand?
+    id                   Int     @id @default(autoincrement())
+    usuarioId            Int     @unique
+    usuario              Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+    nombreEmprendimiento String
+    trayectoria          String
+    localidad            String
+    rubro                String
+    estadoSolicitud      String
+
+    productos Producto[]
+    stand     Stand?
 }
 
 model Stand {
-  id          Int       @id @default(autoincrement())
-  numero      String
-  pabellon    String
-  sector      String
-  coordenadas String
-  estado      String
-  
-  artesanoId  Int?      @unique
-  artesano    Artesano? @relation(fields: [artesanoId], references: [id], onDelete: SetNull)
+    id          Int    @id @default(autoincrement())
+    numero      String
+    pabellon    String
+    sector      String
+    coordenadas String
+    estado      String
+
+    artesanoId Int?      @unique
+    artesano   Artesano? @relation(fields: [artesanoId], references: [id], onDelete: SetNull)
 }
 
 model Producto {
-  id          Int      @id @default(autoincrement())
-  nombre      String
-  descripcion String
-  precio      Float
-  stock       Int
-  
-  artesanoId  Int
-  artesano    Artesano @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
+    id          Int    @id @default(autoincrement())
+    nombre      String
+    descripcion String
+    precio      Float
+    stock       Int
+
+    artesanoId Int
+    artesano   Artesano @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
 }
 
 model Consulta {
-  id              Int      @id @default(autoincrement())
-  terminoBusqueda String
-  filtroAplicado  String
-  fechaHora       DateTime @default(now())
-  
-  usuarioId       Int?
-  usuario         Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+    id              Int      @id @default(autoincrement())
+    terminoBusqueda String
+    filtroAplicado  String
+    fechaHora       DateTime @default(now())
+
+    usuarioId Int?
+    usuario   Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 }
