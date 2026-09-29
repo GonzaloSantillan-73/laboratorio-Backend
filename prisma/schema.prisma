@@ -13,15 +13,23 @@ datasource db {
 }
 
 model Rol {
-    id       Int       @id @default(autoincrement())
-    nombre   String
+    id        Int      @id @default(autoincrement())
+    nombre    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     usuarios Usuario[]
 }
 
 model Usuario {
-    id        Int        @id @default(autoincrement())
-    email     String     @unique
+    id        Int      @id @default(autoincrement())
+    nombre    String
+    apellido  String
+    email     String   @unique
     password  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
     rolId     Int
     rol       Rol        @relation(fields: [rolId], references: [id], onDelete: Restrict)
     artesano  Artesano?
@@ -29,37 +37,43 @@ model Usuario {
 }
 
 model Artesano {
-    id                   Int     @id @default(autoincrement())
-    usuarioId            Int     @unique
-    usuario              Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+    id                   Int      @id @default(autoincrement())
+    usuarioId            Int      @unique
+    usuario              Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     nombreEmprendimiento String
     trayectoria          String
     localidad            String
     rubro                String
     estadoSolicitud      String
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
 
     productos Producto[]
     stand     Stand?
 }
 
 model Stand {
-    id          Int    @id @default(autoincrement())
+    id          Int      @id @default(autoincrement())
     numero      String
     pabellon    String
     sector      String
     coordenadas String
     estado      String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     artesanoId Int?      @unique
     artesano   Artesano? @relation(fields: [artesanoId], references: [id], onDelete: SetNull)
 }
 
 model Producto {
-    id          Int    @id @default(autoincrement())
+    id          Int      @id @default(autoincrement())
     nombre      String
     descripcion String
     precio      Float
     stock       Int
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     artesanoId Int
     artesano   Artesano @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
@@ -69,7 +83,8 @@ model Consulta {
     id              Int      @id @default(autoincrement())
     terminoBusqueda String
     filtroAplicado  String
-    fechaHora       DateTime @default(now())
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
 
     usuarioId Int?
     usuario   Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
