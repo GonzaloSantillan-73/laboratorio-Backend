@@ -82,11 +82,11 @@ model Producto {
 
 model Consulta {
     id              Int      @id @default(autoincrement())
-    terminoBusqueda String
-    filtroAplicado  String
+    terminoBusqueda String?  
+    filtroAplicado  String?  
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
 
-    usuarioId Int?
-    usuario   Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+    usuarioId       Int?
+    usuario         Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 }
