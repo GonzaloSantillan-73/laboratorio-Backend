@@ -14,7 +14,7 @@ export const actualizarStandSchema = crearStandSchema.partial();
 export const consultarStandsSchema = z.object({
     pabellon: z.string().trim().min(1).optional(),
     sector: z.string().trim().min(1).optional(),
-    estado: z.enum(["DISPONIBLE", "OCUPADO", "RESERVADO"]).optional(),
+    estado: z.enum(["DISPONIBLE", "OCUPADO"]).optional(),
     ordenarPor: z.enum(["pabellon", "sector", "createdAt"]).default("createdAt"),
     direccion: z.enum(["asc", "desc"]).default("asc"),
     pagina: z.coerce.number().int().positive().default(1),
