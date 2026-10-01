@@ -51,10 +51,19 @@ export const obtenerConsultaPorIdService = async (id) => {
 };
 
 export const crearConsultaService = async (dto) => {
-    return await prisma.consulta.create({
-        data: dto,
-        include: { usuario: true }
-    });
+    try {
+        return await prisma.consulta.create({
+            data: dto,
+            include: { usuario: true }
+        });
+    } catch (error) {
+        if (error.code === "P2003") {
+            const err = new Error("El usuario asociado (usuarioId) no existe en la base de datos.");
+            err.status = 400;
+            throw err;
+        }
+        throw error;
+    }
 };
 
 export const eliminarConsultaService = async (id) => {
