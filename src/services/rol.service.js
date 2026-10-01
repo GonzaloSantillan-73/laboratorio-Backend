@@ -1,18 +1,4 @@
 import prisma from '../config/prisma.js'
-//import { crearError } from '../utils/errores.js'
-
-
-/*const verificarRol = async (rolId) => {
-    if (rolId === undefined || rolId === null) {
-        return
-    }
-    const rol = await prisma.rol.findUnique({
-        where: { id: rolId }
-    })
-    if (!rol) {
-        throw crearError(`No existe un rol con ID ${rolId}`, 400)
-    }
-}*/
 
 export const consultarRoles = async (criterios) => {
     const { nombre, ordenPor, direccion, pagina, limite } = criterios
