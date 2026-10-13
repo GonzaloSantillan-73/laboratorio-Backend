@@ -25,9 +25,9 @@ model Usuario {
     id        Int      @id @default(autoincrement())
     nombre    String
     apellido  String
-    email     String   @unique
-    password  String
-    createdAt DateTime @default(now())
+    email        String   @unique
+    passwordHash String
+    createdAt    DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     rolId     Int

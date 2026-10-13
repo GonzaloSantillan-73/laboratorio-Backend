@@ -3,15 +3,16 @@ import {z} from "zod"
 export const ProductoSchema = z.object({
     nombre: z.string().trim().min(2,'El nombre es obligatorio').max(100),
     descripcion: z.string().trim().min(2,'La descripción es obligatoria').max(300),
-    precio: z.string().trim().max(100),
+    precio: z.number().positive('El precio debe ser un número positivo'),
     stock: z.number().int('El stock debe ser un número entero').positive('El stock debe ser un número positivo'),
+    artesanoId: z.number().int('El artesano debe ser un número entero').positive('El artesano debe ser un número positivo'),
 })
 
 export const consultarProductoSchema = z.object({
     nombre: z.string().trim().max(100).optional(),
     descripcion: z.string().trim().max(300).optional(),
-    precio: z.string().trim().max(100).optional(),
-    stock: z.number().int().positive().optional(),
+    precio: z.coerce.number().positive().optional(),
+    stock: z.coerce.number().int().positive().optional(),
     ordenPor: z.enum(['nombre', 'descripcion', 'precio', 'stock']).default('nombre'),
     direccion: z.enum(['asc', 'desc']).default('asc'),
     pagina: z.coerce.number().int().positive().default(1),

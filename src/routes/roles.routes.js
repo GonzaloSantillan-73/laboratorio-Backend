@@ -2,7 +2,7 @@ import express from 'express'
 import { obtenerRoles, obtenerRolPorId, crearRol, actualizarRol, eliminarRol} 
 from '../controllers/roles.controllers.js'
 import { validarRol } from '../middlewares/validarRol.js'
-import { validarID } from '../middlewares/validar.js'
+import { validarId as validarID } from '../middlewares/validarId.middleware.js'
 import { validarConsultarRol } from '../middlewares/validarconsultas.js'
 
 const router = express.Router()

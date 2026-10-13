@@ -30,13 +30,15 @@ export const consultarProducto = async (criterios) => {
         where.stock = { equals: stock }
     }
     const desplazamiento = (pagina - 1) * limite
-    const { productos, total } = await prisma.producto.findMany({
-        where,
-        orderBy: [{ [ordenPor]: direccion }, { id: 'asc' }],
-        skip: desplazamiento,
-        take: limite
-    })
-    prisma.producto.count({ where })
+    const [productos, total] = await prisma.$transaction([
+        prisma.producto.findMany({
+            where,
+            orderBy: [{ [ordenPor]: direccion }, { id: 'asc' }],
+            skip: desplazamiento,
+            take: limite
+        }),
+        prisma.producto.count({ where })
+    ])
     return { productos, paginacion: { pagina, limite, total, totalPaginas: Math.ceil(total / limite) } }
 }
 
@@ -58,7 +60,7 @@ export const crearProducto = async (datos) => {
 export const actualizarProducto = async (id, datos) => {
     const existe = await prisma.producto.findUnique({ where: { id } })
     if (!existe) {
-        throw new Error(`No existe un producto con ID ${id}`)
+        return null
     }
     const { nombre, descripcion, precio, stock, artesanoId } = datos
     await verificarArtesano(artesanoId)

@@ -2,7 +2,7 @@ import express from 'express'
 import { obtenerProductos, obtenerProductoPorId, crearProducto, actualizarProducto, eliminarProducto} 
 from '../controllers/producto.controllers.js'
 import { validarProducto } from '../middlewares/validarProducto.js'
-import { validarID } from '../middlewares/validar.js'
+import { validarId as validarID } from '../middlewares/validarId.middleware.js'
 import { validarConsultarProducto } from '../middlewares/validarconsultas.js'
 
 const router = express.Router()

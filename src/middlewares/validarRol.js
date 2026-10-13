@@ -1,4 +1,5 @@
-import { crearError } from '../utils/errores.js'
+import { crearError, detallarErroresZod } from '../utils/errores.js'
+import { rolSchema } from '../validators/roles.schemas.js'
 
 export const validarRol = (req, res, next) => {
     const resultado=rolSchema.safeParse(req.body)

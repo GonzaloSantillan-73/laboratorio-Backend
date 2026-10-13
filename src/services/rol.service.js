@@ -10,13 +10,15 @@ export const consultarRoles = async (criterios) => {
     }
 
     const desplazamiento = (pagina - 1) * limite
-    const { roles ,total } = await prisma.rol.findMany({
-        where,
-        orderBy: [{ [ordenPor]: direccion },{id:'asc'}],
-        skip: desplazamiento,
-        take: limite,
-    })
-    prisma.rol.count({ where })
+    const [roles, total] = await prisma.$transaction([
+        prisma.rol.findMany({
+            where,
+            orderBy: [{ [ordenPor]: direccion },{id:'asc'}],
+            skip: desplazamiento,
+            take: limite,
+        }),
+        prisma.rol.count({ where })
+    ])
     return { roles, paginacion: { pagina, limite, total, totalPaginas: Math.ceil(total / limite) } }
 }
 
@@ -35,7 +37,7 @@ export const crearRol = async (datos) => {
 export const actualizarRol = async (id, datos) => {
     const existe = await prisma.rol.findUnique({ where: { id } })
     if (!existe) {
-        throw new Error(`No existe un rol con ID ${id}`)
+        return null
     }
     const { nombre } = datos
     return prisma.rol.update({
