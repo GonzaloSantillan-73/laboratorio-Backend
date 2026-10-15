@@ -22,7 +22,7 @@ model Rol {
 }
 
 model Usuario {
-    id        Int      @id @default(autoincrement())
+    id        String   @id @default(uuid()) @db.Uuid
     nombre    String
     apellido  String
     email        String   @unique
@@ -38,7 +38,7 @@ model Usuario {
 
 model Artesano {
     id                   Int      @id @default(autoincrement())
-    usuarioId            Int      @unique
+    usuarioId            String   @unique @db.Uuid
     usuario              Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     nombreEmprendimiento String
     trayectoria          String
@@ -87,6 +87,13 @@ model Consulta {
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
 
-    usuarioId       Int?
+    usuarioId       String?  @db.Uuid
     usuario         Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+}
+
+model TokenRevocado {
+    jti     String   @id
+    venceEn DateTime
+
+    @@index([venceEn])
 }
