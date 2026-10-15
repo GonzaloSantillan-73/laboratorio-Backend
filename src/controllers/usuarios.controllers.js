@@ -1,6 +1,6 @@
 import { crearError } from '../utils/errores.js'
 import * as usuarioServices from '../services/usuario.service.js'
-
+import { generarToken } from '../services/tokens.service.js'
 
 export const obtenerUsuarios = async (req, res, next) => {
     try {
@@ -16,6 +16,22 @@ export const obtenerUsuarioPorId = async (req, res, next) => {
         const usuario = await usuarioServices.consultarUsuarioPorId(req.params.id)
         if (!usuario) {
             return next(crearError(`No existe un usuario con ID ${req.params.id}`, 404))
+        }
+        res.json(usuario)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const obtenerMiUsuario = async (req, res, next) => {
+    try {
+        const usuario = await usuarioServices.consultarUsuarioPorId(req.usuario.id)
+        if (!usuario) {
+            res.set("WWW-Authenticate",
+                'Bearer error="invalid_token"')
+            return res.status(401).json({
+                mensaje: "La cuenta asociada al token no existe."
+            })
         }
         res.json(usuario)
     } catch (error) {
