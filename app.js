@@ -7,6 +7,7 @@ import productosRoutes from './src/routes/productos.routes.js'
 import usuarioRoutes from './src/routes/usuarios.routes.js'
 import rolesRoutes from './src/routes/roles.routes.js'
 import "./config/jwt.js"
+import { iniciarLimpiezaRevocaciones } from './tareas/limpiezaRevocaciones.js'
 
 const app = express();
 app.use(express.json());
@@ -35,4 +36,5 @@ app.use(manejadorErrores);
 
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
+    iniciarLimpiezaRevocaciones();
 });
