@@ -69,8 +69,10 @@ export const registrarUsuario = async (req, res, next) => {
 export const iniciarSesion = async (req, res, next) => {
     try {
         const usuario = await usuarioServices.iniciarSesion(req.iniciarSesionDto);
+        const token = generarToken(usuario)
         return res.status(200).json({
             mensaje: "Credenciales verificadas correctamente.",
+            token: token,
             usuario: usuario
         });
     } catch (error) {
