@@ -14,7 +14,7 @@ datasource db {
 
 model Rol {
     id        Int      @id @default(autoincrement())
-    nombre    String
+    nombre    String    @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -22,18 +22,30 @@ model Rol {
 }
 
 model Usuario {
-    id        String   @id @default(uuid()) @db.Uuid
-    nombre    String
-    apellido  String
+    id           String   @id @default(uuid()) @db.Uuid
+    nombre       String
+    apellido     String
     email        String   @unique
     passwordHash String
     createdAt    DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    updatedAt    DateTime @updatedAt
+    activo      Boolean  @default(true)
 
     rolId     Int
     rol       Rol        @relation(fields: [rolId], references: [id], onDelete: Restrict)
     artesano  Artesano?
     consultas Consulta[]
+    visitante Visitante?
+}
+
+model Visitante {
+    id        Int     @id @default(autoincrement())
+    nombre    String
+    email     String
+    dni       String  @unique
+    direccion String
+    usuarioId String  @unique @db.Uuid
+    usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
 }
 
 model Artesano {
@@ -53,18 +65,18 @@ model Artesano {
 }
 
 model Stand {
-    id            Int      @id @default(autoincrement())
-    pabellon      String
-    sector        String
-    coordenadaX   Int
-    coordenadaY   Int
-    estado        String   @default("DISPONIBLE")
+    id          Int    @id @default(autoincrement())
+    pabellon    String
+    sector      String
+    coordenadaX Int
+    coordenadaY Int
+    estado      String @default("DISPONIBLE")
 
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-    artesanoId    Int?     @unique
-    artesano      Artesano? @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
+    artesanoId Int?      @unique
+    artesano   Artesano? @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
 }
 
 model Producto {
@@ -82,13 +94,13 @@ model Producto {
 
 model Consulta {
     id              Int      @id @default(autoincrement())
-    terminoBusqueda String?  
-    filtroAplicado  String?  
+    terminoBusqueda String?
+    filtroAplicado  String?
     createdAt       DateTime @default(now())
     updatedAt       DateTime @updatedAt
 
-    usuarioId       String?  @db.Uuid
-    usuario         Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+    usuarioId String?  @db.Uuid
+    usuario   Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 }
 
 model TokenRevocado {
