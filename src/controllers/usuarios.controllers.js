@@ -2,6 +2,7 @@ import { crearError } from '../utils/errores.js'
 import * as usuarioServices from '../services/usuario.service.js'
 import { generarToken } from '../services/tokens.service.js'
 
+
 export const obtenerUsuarios = async (req, res, next) => {
     try {
         const resultado = await usuarioServices.consultarUsuario(req.consultaUsuarios)
@@ -72,10 +73,10 @@ export const eliminarUsuario = async (req, res, next) => {
     }
 }
 
-export const registrarUsuario = async (req, res, next) => {
+export const registrarUsuarioVisitante = async (req, res, next) => {
     try {
         const registrarUsuarioDto = req.registrarUsuarioDto;
-        const usuario = await usuarioServices.registrarUsuario(registrarUsuarioDto);
+        const usuario = await usuarioServices.registrarUsuarioVisitante(registrarUsuarioDto);
         return res.status(201).json(usuario);
     } catch (error) {
         return next(error);
