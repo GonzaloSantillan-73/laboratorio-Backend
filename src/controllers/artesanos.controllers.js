@@ -4,7 +4,8 @@ import {
     crearArtesanoService,
     actualizarArtesanoService,
     eliminarArtesanoService,
-    consultarArtesanosService
+    consultarArtesanosService,
+    obtenerMiArtesano
 } from "../services/artesanos.service.js";
 
 export const obtenerArtesanos = async (req, res, next) => {
@@ -62,4 +63,9 @@ export const eliminarArtesanoId = async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
+};
+export const consultarMiArtesano = async (req, res) => {
+    const datos = await obtenerMiArtesano(
+        req.contextoUsuario.id);
+    return res.json(datos);
 };

@@ -119,3 +119,10 @@ export const consultarArtesanosService = async (criteriosConsulta) => {
         }
     };
 };
+export const obtenerMiArtesano = async (usuarioId) => {
+    return prisma.artesano.findUniqueOrThrow({
+        where: { usuarioId },
+        select: { id: true, nombreEmprendimiento: true, trayectoria: true,
+            localidad: true, rubro: true, estadoSolicitud: true }
+    });
+};
