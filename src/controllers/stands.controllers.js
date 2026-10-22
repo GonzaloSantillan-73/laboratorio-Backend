@@ -9,7 +9,7 @@ import {
 
 export const obtenerStands = async (req, res, next) => {
     try {
-        const criteriosConsulta = req.consultaStands;
+        const criteriosConsulta = req.consultaValidada;
         const resultado = await consultarStandsService(criteriosConsulta);
 
         return res.status(200).json(resultado);
@@ -30,7 +30,7 @@ export const obtenerStandPorId = async (req, res, next) => {
 
 export const crearStand = async (req, res, next) => {
     try {
-        const crearStandDto = req.body;
+        const crearStandDto = req.bodyValidado;
         const nuevoStand = await crearStandService(crearStandDto);
         return res.status(201).json(nuevoStand);
     } catch (error) {
@@ -41,7 +41,7 @@ export const crearStand = async (req, res, next) => {
 export const actualizarStandId = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const actualizarStandDto = req.body;
+        const actualizarStandDto = req.bodyValidado;
 
         const standActualizado = await actualizarStandService(id, actualizarStandDto);
         return res.status(200).json(standActualizado);

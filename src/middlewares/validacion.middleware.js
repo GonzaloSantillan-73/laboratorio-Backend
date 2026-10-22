@@ -25,3 +25,17 @@ export const validarParametros = (schema, mensaje = "Los parámetros son inváli
         return next();
     };
 };
+
+export const validarConsulta = (schema, mensaje = "Los parámetros de consulta son inválidos.") => {
+    return (req, res, next) => {
+        const resultado = schema.safeParse(req.query);
+        if (!resultado.success) {
+            return res.status(400).json({
+                mensaje: mensaje,
+                errores: resultado.error.issues
+            });
+        }
+        req.consultaValidada = resultado.data;
+        return next();
+    };
+};
