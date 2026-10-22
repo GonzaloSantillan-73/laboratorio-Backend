@@ -1,5 +1,5 @@
 import express from 'express'
-import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, actualizarUsuario, eliminarUsuario, registrarUsuario, iniciarSesion, crearAdministrador}
+import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, actualizarUsuario, eliminarUsuario, registrarUsuario, iniciarSesion, crearAdministrador, asociarArtesano}
 from '../controllers/usuarios.controllers.js'
 import { agregarRol, quitarRol } from '../controllers/roles.controllers.js'
 import { actualizarActivo } from '../controllers/estado.controllers.js'
@@ -10,7 +10,7 @@ import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cerrarSesion } from "../controllers/sesiones.controllers.js"
 import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js"
 import { validarBody, validarParametros } from "../middlewares/validacion.middleware.js"
-import { registroAdminSchema, usuarioIdParametrosSchema } from "../validators/usuarios.schemas.js"
+import { registroAdminSchema, usuarioIdParametrosSchema, asignarArtesanoSchema } from "../validators/usuarios.schemas.js"
 import { asignarAdministradorSchema, retirarRolParametrosSchema } from "../validators/roles.schemas.js"
 import { actualizarActivoSchema } from "../validators/estado.schemas.js"
 
@@ -36,6 +36,13 @@ router.post("/registro-administrador",
     autorizarRoles("ADMINISTRADOR"),
     validarBody(registroAdminSchema),
     crearAdministrador
+);
+router.post("/asignar-artesano",
+    autenticarUsuario,
+    cargarContextoUsuario,
+    autorizarRoles("ADMINISTRADOR"),
+    validarBody(asignarArtesanoSchema),
+    asociarArtesano
 );
 router.post("/:id/roles",
     autenticarUsuario,

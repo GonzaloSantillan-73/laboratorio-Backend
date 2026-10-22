@@ -1,6 +1,7 @@
 import { crearError } from '../utils/errores.js'
 import * as usuarioServices from '../services/usuario.service.js'
 import { generarToken } from '../services/tokens.service.js'
+import { asignarArtesano } from "../services/artesanos.service.js"
 
 
 export const obtenerUsuarios = async (req, res, next) => {
@@ -89,4 +90,9 @@ export const iniciarSesion = async (req, res, next) => {
 export const crearAdministrador = async (req, res) => {
     const usuario = await usuarioServices.registrarAdministrador(req.bodyValidado);
     return res.status(201).json(usuario);
+};
+
+export const asociarArtesano = async (req, res) => {
+    const artesano = await asignarArtesano(req.bodyValidado);
+    return res.status(201).json(artesano);
 };
