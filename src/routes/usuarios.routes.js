@@ -1,12 +1,16 @@
 import express from 'express'
-import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, actualizarUsuario, eliminarUsuario, registrarUsuario, iniciarSesion}
+import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, actualizarUsuario, eliminarUsuario, registrarUsuario, iniciarSesion, crearAdministrador}
 from '../controllers/usuarios.controllers.js'
+import { agregarRol } from '../controllers/roles.controllers.js'
 import { validarUsuario, validarRegistroUsuario, validarInicioSesion } from '../middlewares/validarUsuario.js'
 import { validarId as validarID } from '../middlewares/validarId.middleware.js'
 import { validarConsultarUsuario } from '../middlewares/validarconsultas.js'
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cerrarSesion } from "../controllers/sesiones.controllers.js"
-import { cargarContextoUsuario } from "../middlewares/autorizacion.middleware.js"
+import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js"
+import { validarBody, validarParametros } from "../middlewares/validacion.middleware.js"
+import { registroAdminSchema, usuarioIdParametrosSchema } from "../validators/usuarios.schemas.js"
+import { asignarAdministradorSchema } from "../validators/roles.schemas.js"
 
 const router = express.Router()
 
@@ -24,6 +28,23 @@ router.post(
     iniciarSesion
 );
 router.post("/logout", autenticarUsuario, cerrarSesion)
+router.post("/registro-administrador",
+    autenticarUsuario,
+    cargarContextoUsuario,
+    autorizarRoles("ADMINISTRADOR"),
+    validarBody(registroAdminSchema),
+    crearAdministrador
+);
+router.post("/:id/roles",
+    autenticarUsuario,
+    cargarContextoUsuario,
+    autorizarRoles("ADMINISTRADOR"),
+    validarParametros(
+        usuarioIdParametrosSchema, "ID inválido."),
+    validarBody(asignarAdministradorSchema,
+        "Solo se puede asignar ADMINISTRADOR."),
+    agregarRol
+);
 router.put('/:id', validarID, validarUsuario, actualizarUsuario)
 router.delete('/:id', validarID, eliminarUsuario)
 

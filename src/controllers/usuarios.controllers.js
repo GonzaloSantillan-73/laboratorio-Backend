@@ -84,3 +84,9 @@ export const iniciarSesion = async (req, res, next) => {
         return next(error);
     }
 };
+
+
+export const crearAdministrador = async (req, res) => {
+    const usuario = await usuarioServices.registrarAdministrador(req.bodyValidado);
+    return res.status(201).json(usuario);
+};
