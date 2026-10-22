@@ -126,3 +126,38 @@ export const obtenerMiArtesano = async (usuarioId) => {
             localidad: true, rubro: true, estadoSolicitud: true }
     });
 };
+
+export const asignarArtesano = async (dto) => {
+    return prisma.$transaction(async tx => {
+        const usuario = await tx.usuario.findUniqueOrThrow({
+            where: { id: dto.usuarioId },
+            include: { roles: { include: { rol: true } },
+                artesano: true }
+        });
+        const esAdmin = usuario.roles.some(
+            a => a.rol.nombre === "ADMINISTRADOR");
+        if (!usuario.activo || !esAdmin ||
+            usuario.artesano) {
+            const error = new Error(
+                "Requiere administrador activo " +
+                "sin Artesano.");
+            error.status = 409; throw error;
+        }
+        const actualizado = await tx.usuario.update({
+            where: { id: usuario.id },
+            data: {
+                artesano: { create: {
+                    nombreEmprendimiento: dto.nombreEmprendimiento,
+                    trayectoria: dto.trayectoria,
+                    localidad: dto.localidad, rubro: dto.rubro,
+                    estadoSolicitud: "APROBADO"
+                } },
+                roles: { create: {
+                    rol: { connect: { nombre: "ARTESANO" } }
+                } }
+            },
+            select: { artesano: true }
+        });
+        return actualizado.artesano;
+    });
+};

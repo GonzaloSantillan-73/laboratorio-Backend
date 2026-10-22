@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { crearArtesanoSchema } from "./artesanos.schemas.js"
 
 export const usuarioSchema = z.object({
     nombre: z.string().trim().min(2, 'El nombre es obligatorio').max(100),
@@ -54,3 +55,6 @@ export const registroAdminSchema =
 export const usuarioIdParametrosSchema = z.object({
     id: z.uuid()
 })
+
+export const asignarArtesanoSchema =
+    crearArtesanoSchema.extend({ usuarioId: z.uuid() }).strict();
