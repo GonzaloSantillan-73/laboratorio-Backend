@@ -55,9 +55,10 @@ export const consultarUsuario = async (criterios) => {
 
 
 export const consultarUsuarioPorId = async (id) => {
-    return prisma.usuario.findUnique({ where: { id }, 
-            include: { rol: true }, visitante: { select: { id: true }}
-            })
+    return prisma.usuario.findUnique({
+        where: { id },
+        include: { rol: true }, visitante: { select: { id: true } }
+    })
 }
 
 export const crearUsuario = async (datos) => {
@@ -139,7 +140,7 @@ export const iniciarSesion = async (iniciarSesionDto) => {
     const usuario = await prisma.usuario.findUnique({
         where: { email: email }
     });
-    if (!usuario) {
+    if (!passwordValida || !usuario.activo) {
         const error = new Error("Las credenciales son inválidas.");
         error.status = 401;
         throw error;

@@ -25,19 +25,7 @@ export const obtenerUsuarioPorId = async (req, res, next) => {
 }
 
 export const obtenerMiUsuario = async (req, res, next) => {
-    try {
-        const usuario = await usuarioServices.consultarUsuarioPorId(req.usuario.id)
-        if (!usuario) {
-            res.set("WWW-Authenticate",
-                'Bearer error="invalid_token"')
-            return res.status(401).json({
-                mensaje: "La cuenta asociada al token no existe."
-            })
-        }
-        res.json(usuario)
-    } catch (error) {
-        next(error)
-    }
+    return res.status(200).json({ usuario: req.contextoUsuario })
 }
 
 export const crearUsuario = async (req, res, next) => {

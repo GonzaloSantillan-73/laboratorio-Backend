@@ -7,11 +7,12 @@ import { validarConsultarUsuario } from '../middlewares/validarconsultas.js'
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cerrarSesion } from "../controllers/sesiones.controllers.js"
 import { registroVisitanteSchema } from "../validators/usuarios.schemas.js"
+import { cargarContextoUsuario } from "../middlewares/autorizacion.middleware.js"
 
 const router = express.Router()
 
 router.get('/', validarConsultarUsuario, obtenerUsuarios)
-router.get('/me', autenticarUsuario, obtenerMiUsuario)
+router.get('/me', autenticarUsuario, cargarContextoUsuario, obtenerMiUsuario)
 router.get('/:id', validarID, obtenerUsuarioPorId)
 router.post('/', validarUsuario, crearUsuario)
 router.post("/registro",
