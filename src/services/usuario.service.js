@@ -103,8 +103,8 @@ export const eliminarUsuario = async (id) => {
     return prisma.usuario.delete({ where: { id } })
 }
 
-export const registrarUsuario = async (registrarUsuarioDto) => {
-    const { nombre, apellido, email, password, rolId } = registrarUsuarioDto;
+export const registrarUsuarioVisitante = async (registrarUsuarioDto) => {
+    const { nombre, apellido, email, password, dni, direccion } = registrarUsuarioDto;
     // Busca un usuario con el mismo email.
     const usuarioExistente = await prisma.usuario.findUnique({
         where: { email: email }
@@ -120,12 +120,14 @@ export const registrarUsuario = async (registrarUsuarioDto) => {
     // Guarda hash, nunca contraseña original.
     return prisma.usuario.create({
         data: {
-            nombre: nombre, apellido: apellido, email: email,
-            passwordHash: passwordHash, rol: { connect: { id: rolId } }
+            nombre: nombre, apellido: apellido, email: email, activo: true,
+            passwordHash: passwordHash, rol: { connect: { nombre: "VISITANTE" } },
+            visitante: { create: { nombre: nombre, email: email, dni: dni, direccion: direccion } }
         },
         select: {
-            id: true, nombre: true, apellido: true,
-            email: true, createdAt: true
+            id: true, nombre: true, apellido: true, activo:true,
+            email: true, createdAt: true,
+            visitante:{ select:{id:true}}
         }
     });
 };
