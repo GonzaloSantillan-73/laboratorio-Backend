@@ -13,12 +13,9 @@ datasource db {
 }
 
 model Rol {
-    id        Int      @id @default(autoincrement())
-    nombre    String    @unique
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    usuarios Usuario[]
+    id       Int          @id @default(autoincrement())
+    nombre   String       @unique
+    usuarios UsuarioRol[]
 }
 
 model Usuario {
@@ -29,24 +26,22 @@ model Usuario {
     passwordHash String
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
-    activo      Boolean  @default(true)
+    activo       Boolean  @default(true)
 
-    rolId     Int
-    rol       Rol        @relation(fields: [rolId], references: [id], onDelete: Restrict)
+    roles     UsuarioRol[]
     artesano  Artesano?
     consultas Consulta[]
-    visitante Visitante?
 }
 
-model Visitante {
-    id        Int     @id @default(autoincrement())
-    nombre    String
-    email     String
-    dni       String  @unique
-    direccion String
-    usuarioId String  @unique @db.Uuid
-    usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+model UsuarioRol {
+    usuarioId String  @db.Uuid
+    rolId     Int
+    usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+    rol       Rol     @relation(fields: [rolId], references: [id], onDelete: Restrict)
+
+    @@id([usuarioId, rolId])
 }
+
 
 model Artesano {
     id                   Int      @id @default(autoincrement())
