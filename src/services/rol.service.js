@@ -70,3 +70,34 @@ export const asignarAdministrador = async (usuarioId) => {
         });
     });
 };
+
+
+export const retirarRol = async (usuarioId, nombre) => {
+    return prisma.$transaction(async tx => {
+        const u = await tx.usuario.findUniqueOrThrow({
+            where: { id: usuarioId },
+            include: { roles: { include: { rol: true } } }
+        });
+        const asignacion = u.roles.find(a => a.rol.nombre === nombre);
+
+        if (!asignacion) return;
+        if (u.roles.length === 1) {
+            const error = new Error("Debe conservar un rol.");
+            error.status = 409; throw error;
+        }
+        if (nombre === "ADMINISTRADOR" && u.activo) {
+            const otros = await tx.usuario.count({
+                where: { id: { not: usuarioId }, activo: true,
+                    roles: { some: { rol: { nombre } } } }
+            });
+            if (!otros) {
+                const error = new Error(
+                    "Debe quedar un administrador activo.");
+                error.status = 409; throw error;
+            }
+        }
+        await tx.usuarioRol.delete({ where: {
+            usuarioId_rolId: { usuarioId, rolId: asignacion.rolId }
+        } });
+    });
+};
