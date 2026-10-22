@@ -43,7 +43,7 @@ export const consultarUsuario = async (criterios) => {
     const [usuarios, total] = await prisma.$transaction([
         prisma.usuario.findMany({
             where,
-            orderBy: [{ [ordenPor]: direccion },{id:'asc'}],
+            orderBy: [{ [ordenPor]: direccion }, { id: 'asc' }],
             skip: desplazamiento,
             take: limite,
             include: { rol: true }
@@ -55,7 +55,9 @@ export const consultarUsuario = async (criterios) => {
 
 
 export const consultarUsuarioPorId = async (id) => {
-    return prisma.usuario.findUnique({ where: { id }, include: { rol: true } })
+    return prisma.usuario.findUnique({ where: { id }, 
+            include: { rol: true }, visitante: { select: { id: true }}
+            })
 }
 
 export const crearUsuario = async (datos) => {
@@ -125,9 +127,9 @@ export const registrarUsuarioVisitante = async (registrarUsuarioDto) => {
             visitante: { create: { nombre: nombre, email: email, dni: dni, direccion: direccion } }
         },
         select: {
-            id: true, nombre: true, apellido: true, activo:true,
+            id: true, nombre: true, apellido: true, activo: true,
             email: true, createdAt: true,
-            visitante:{ select:{id:true}}
+            visitante: { select: { id: true } }
         }
     });
 };
