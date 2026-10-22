@@ -17,6 +17,17 @@ const verificarRol = async (rolId) => {
     }
 }
 
+const verificarRoles = async (rolesIds) => {
+    for (const rolId of rolesIds) {
+        const rol = await prisma.rol.findUnique({
+            where: { id: rolId }
+        })
+        if (!rol) {
+            throw crearError(`No existe un rol con ID ${rolId}`, 400)
+        }
+    }
+}
+
 export const consultarUsuario = async (criterios) => {
     const { nombre, apellido, email, rolId, ordenPor, direccion, pagina, limite } = criterios
 
@@ -36,7 +47,7 @@ export const consultarUsuario = async (criterios) => {
         }
     }
     if (rolId !== undefined) {
-        where.rolId = rolId
+        where.roles = { some: { rolId: rolId } }
     }
 
     const desplazamiento = (pagina - 1) * limite
@@ -46,24 +57,44 @@ export const consultarUsuario = async (criterios) => {
             orderBy: [{ [ordenPor]: direccion }, { id: 'asc' }],
             skip: desplazamiento,
             take: limite,
-            include: { rol: true }
+            select: {
+                id: true, nombre: true, apellido: true, email: true, activo: true,
+                roles: {
+                    select: { rol: { select: { nombre: true } } }
+                }
+            }
         }),
         prisma.usuario.count({ where })
     ])
-    return { usuarios, paginacion: { pagina, limite, total, totalPaginas: Math.ceil(total / limite) } }
+    const usuariosConRoles = usuarios.map(usuario => ({
+        ...usuario,
+        roles: usuario.roles.map(asignacion => asignacion.rol.nombre)
+    }))
+    return { usuarios: usuariosConRoles, paginacion: { pagina, limite, total, totalPaginas: Math.ceil(total / limite) } }
 }
 
 
 export const consultarUsuarioPorId = async (id) => {
-    return prisma.usuario.findUnique({
+    const usuario = await prisma.usuario.findUnique({
         where: { id },
-        include: { rol: true }, visitante: { select: { id: true } }
-    })
+        select: {
+            id: true, nombre: true, apellido: true, email: true, activo: true,
+            roles: {
+                select: { rol: { select: { nombre: true } } }
+            }
+        }
+    });
+    if (!usuario) return null;
+    return {
+        ...usuario,
+        roles: usuario.roles.map(asignacion =>
+            asignacion.rol.nombre)
+    };
 }
 
 export const crearUsuario = async (datos) => {
-    const { nombre, apellido, email, password, rolId } = datos
-    await verificarRol(rolId)
+    const { nombre, apellido, email, password, rolesIds } = datos
+    await verificarRoles(rolesIds)
     const passwordHash = await bcrypt.hash(password, FACTOR_COSTO);
     return prisma.usuario.create({
         data: {
@@ -71,9 +102,14 @@ export const crearUsuario = async (datos) => {
             apellido,
             email,
             passwordHash,
-            rol: { connect: { id: rolId } }
+            roles: {
+                create: rolesIds.map(rolId => ({ rol: { connect: { id: rolId } } }))
+            }
         },
-        include: { rol: true }
+        select: {
+            id: true, nombre: true, apellido: true, email: true, activo: true,
+            roles: { select: { rol: { select: { nombre: true } } } }
+        }
     })
 }
 
@@ -82,8 +118,8 @@ export const actualizarUsuario = async (id, datos) => {
     if (!existe) {
         return null
     }
-    const { nombre, apellido, email, password, rolId } = datos
-    await verificarRol(rolId)
+    const { nombre, apellido, email, password, rolesIds } = datos
+    await verificarRoles(rolesIds)
     const passwordHash = await bcrypt.hash(password, FACTOR_COSTO);
     return prisma.usuario.update({
         where: { id },
@@ -92,9 +128,16 @@ export const actualizarUsuario = async (id, datos) => {
             apellido,
             email,
             passwordHash,
-            rol: { connect: { id: rolId } }
+            // borra los roles que tenia y le asigna los nuevos
+            roles: {
+                deleteMany: {},
+                create: rolesIds.map(rolId => ({ rol: { connect: { id: rolId } } }))
+            }
         },
-        include: { rol: true }
+        select: {
+            id: true, nombre: true, apellido: true, email: true, activo: true,
+            roles: { select: { rol: { select: { nombre: true } } } }
+        }
     })
 }
 
@@ -106,31 +149,21 @@ export const eliminarUsuario = async (id) => {
     return prisma.usuario.delete({ where: { id } })
 }
 
-export const registrarUsuarioVisitante = async (registrarUsuarioDto) => {
-    const { nombre, apellido, email, password, dni, direccion } = registrarUsuarioDto;
-    // Busca un usuario con el mismo email.
-    const usuarioExistente = await prisma.usuario.findUnique({
-        where: { email: email }
-    });
-    if (usuarioExistente) {
-        const error = new Error("Ya existe usuario con ese email.");
-        error.status = 409;
-        throw error;
-    }
-    await verificarRol(rolId)
-    // Genera el salt y el hash de la contraseña.
+export const registrarUsuario = async (registrarUsuarioDto) => {
+    const { nombre, apellido, email, password, rolesIds } = registrarUsuarioDto;
+    await verificarRoles(rolesIds)
     const passwordHash = await bcrypt.hash(password, FACTOR_COSTO);
-    // Guarda hash, nunca contraseña original.
+
     return prisma.usuario.create({
         data: {
-            nombre: nombre, apellido: apellido, email: email, activo: true,
-            passwordHash: passwordHash, rol: { connect: { nombre: "VISITANTE" } },
-            visitante: { create: { nombre: nombre, email: email, dni: dni, direccion: direccion } }
+            nombre, apellido, email, passwordHash, activo: true,
+            roles: {
+                create: rolesIds.map(rolId => ({ rol: { connect: { id: rolId } } }))
+            }
         },
         select: {
-            id: true, nombre: true, apellido: true, activo: true,
-            email: true, createdAt: true,
-            visitante: { select: { id: true } }
+            id: true, nombre: true, apellido: true, email: true,
+            activo: true
         }
     });
 };
@@ -140,7 +173,7 @@ export const iniciarSesion = async (iniciarSesionDto) => {
     const usuario = await prisma.usuario.findUnique({
         where: { email: email }
     });
-    if (!passwordValida || !usuario.activo) {
+    if (!usuario) {
         const error = new Error("Las credenciales son inválidas.");
         error.status = 401;
         throw error;
@@ -151,11 +184,8 @@ export const iniciarSesion = async (iniciarSesionDto) => {
         usuario.passwordHash
     );
 
-    if (!passwordValida) {
-        const error = new Error(
-            "Las credenciales son inválidas."
-        );
-
+    if (!passwordValida || !usuario.activo) {
+        const error = new Error("Las credenciales son inválidas.");
         error.status = 401;
         throw error;
     }
