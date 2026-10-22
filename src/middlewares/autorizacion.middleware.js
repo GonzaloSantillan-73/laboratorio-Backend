@@ -12,3 +12,17 @@ export const cargarContextoUsuario = async (req, res, next) => {
     req.contextoUsuario = usuario
     return next()
 }
+
+export const autorizarRoles = (...rolesPermitidos) => {
+    return (req, res, next) => {
+        const usuario = req.contextoUsuario;
+        const permitido = (usuario?.roles ?? []).some(rol => rolesPermitidos.includes(rol));
+
+        if (!permitido) {
+            return res.status(403).json({
+                mensaje: "No tiene permiso para esta operación."
+            });
+        }
+        return next();
+    };
+};
