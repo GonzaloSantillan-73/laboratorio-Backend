@@ -11,3 +11,7 @@ export const consultarRolSchema = z.object({
     pagina: z.coerce.number().int().positive().default(1),
     limite: z.coerce.number().int().min(1).max(50).default(10),
 })
+
+export const asignarAdministradorSchema = z
+    .object({ rol: z.literal("ADMINISTRADOR") })
+    .strict();

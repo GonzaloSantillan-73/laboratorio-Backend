@@ -54,3 +54,10 @@ export const eliminarRol = async (req, res, next) => {
         next(error)
     }
 }
+
+export const agregarRol = async (req, res) => {
+    await rolServices.asignarAdministrador(req.parametrosValidados.id);
+    return res.json({
+        mensaje: "Rol ADMINISTRADOR asignado."
+    });
+};
