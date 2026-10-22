@@ -61,15 +61,15 @@ export const eliminarUsuario = async (req, res, next) => {
     }
 }
 
-export const registrarUsuarioVisitante = async (req, res, next) => {
+export const registrarUsuario = async (req, res, next) => {
     try {
-        const registrarUsuarioDto = req.registrarUsuarioDto;
-        const usuario = await usuarioServices.registrarUsuarioVisitante(registrarUsuarioDto);
+        const usuario = await usuarioServices.registrarUsuario(req.registrarUsuarioDto);
         return res.status(201).json(usuario);
     } catch (error) {
         return next(error);
     }
 };
+
 
 export const iniciarSesion = async (req, res, next) => {
     try {
