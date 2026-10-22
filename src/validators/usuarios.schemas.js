@@ -13,8 +13,8 @@ export const registrarUsuarioSchema = z.object({
     apellido: z.string().trim().min(2, "Debe tener al menos 2 caracteres."),
     email: z.email("El email no tiene un formato válido."),
     password: z.string().min(8, "Debe tener al menos 8 caracteres."),
-    rolesIds: z.array(z.number().int('El rol debe ser un número entero').positive('El rol debe ser un número positivo')).min(1, 'Debe tener al menos un rol'),
 })
+
 
 export const iniciarSesionSchema = z.object({
     email: z.email("El email no tiene un formato válido."),
@@ -44,3 +44,13 @@ export const registroVisitanteSchema =
         dni: visitanteSchema.shape.dni,
         direccion: visitanteSchema.shape.direccion
     }).strict()
+
+
+
+export const registroAdminSchema =
+    registrarUsuarioSchema.strict();
+
+
+export const usuarioIdParametrosSchema = z.object({
+    id: z.uuid()
+})

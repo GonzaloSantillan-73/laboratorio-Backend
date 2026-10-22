@@ -150,16 +150,13 @@ export const eliminarUsuario = async (id) => {
 }
 
 export const registrarUsuario = async (registrarUsuarioDto) => {
-    const { nombre, apellido, email, password, rolesIds } = registrarUsuarioDto;
-    await verificarRoles(rolesIds)
+    const { nombre, apellido, email, password } = registrarUsuarioDto;
     const passwordHash = await bcrypt.hash(password, FACTOR_COSTO);
 
     return prisma.usuario.create({
         data: {
             nombre, apellido, email, passwordHash, activo: true,
-            roles: {
-                create: rolesIds.map(rolId => ({ rol: { connect: { id: rolId } } }))
-            }
+            roles: { create: { rol: { connect: { nombre: "ARTESANO" } } } }
         },
         select: {
             id: true, nombre: true, apellido: true, email: true,
@@ -167,6 +164,7 @@ export const registrarUsuario = async (registrarUsuarioDto) => {
         }
     });
 };
+
 
 export const iniciarSesion = async (iniciarSesionDto) => {
     const { email, password } = iniciarSesionDto;
@@ -197,4 +195,22 @@ export const iniciarSesion = async (iniciarSesionDto) => {
         apellido: usuario.apellido,
         email: usuario.email
     };
+};
+
+
+
+export const registrarAdministrador = async (dto) => {
+    const { nombre, apellido, email, password } = dto;
+    const passwordHash = await bcrypt.hash(password, FACTOR_COSTO);
+    return prisma.usuario.create({
+        data: {
+            nombre, apellido, email, passwordHash, activo: true,
+            roles: { create: {
+                rol: { connect: { nombre: "ADMINISTRADOR" } }
+            } }
+        },
+        select: {
+            id: true, nombre: true, apellido: true, email: true, activo: true
+        }
+    });
 };
