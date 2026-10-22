@@ -6,8 +6,8 @@ import consultasRoutes from './src/routes/consultas.routes.js';
 import productosRoutes from './src/routes/productos.routes.js'
 import usuarioRoutes from './src/routes/usuarios.routes.js'
 import rolesRoutes from './src/routes/roles.routes.js'
-import "./config/jwt.js"
-import { iniciarLimpiezaRevocaciones } from './tareas/limpiezaRevocaciones.js'
+import "./src/config/jwt.js"
+import { iniciarLimpiezaRevocaciones } from './src/tareas/limpiezaRevocaciones.js'
 
 const app = express();
 app.use(express.json());
