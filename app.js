@@ -22,9 +22,9 @@ app.get('/', (req, res) => {
 app.use('/api/artesanos', artesanosRoutes)
 app.use('/api/stands', standRoutes);
 app.use('/api/consultas', consultasRoutes);
-app.use('/api/productos',productosRoutes)
-app.use('/api/usuarios',usuarioRoutes)
-app.use('/api/roles',rolesRoutes)
+app.use('/api/productos', productosRoutes)
+app.use('/api/usuarios', usuarioRoutes)
+app.use('/api/roles', rolesRoutes)
 
 app.use((req, res, next) => {
     const error = new Error(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
@@ -32,7 +32,25 @@ app.use((req, res, next) => {
     next(error);
 });
 
-app.use(manejadorErrores);
+app.use((err, req, res, next) => {
+    if (res.headersSent) return next(err)
+    const mensajes = {
+        P2002: "Ya existe un registro con esos datos únicos.",
+        P2003: "La operación afecta registros relacionados.",
+        P2025: "Registro no encontrado.",
+        P2034: "Hubo otro cambio simultáneo. Reintentar."
+    };
+    const mensajeErrorPrisma = mensajes[err.code]
+    const estado = mensajeErrorPrisma
+        ? (err.code === "P2025" ? 404 : 409)
+        : (err.status || 500);
+    const mensaje = estado >= 500
+        ? "Error interno del servidor."
+        : (mensajeErrorPrisma || err.message)
+    return res.status(estado).json({ mensaje })
+});
+
+app.use(manejadorErrores)
 
 app.listen(PORT, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
