@@ -37,7 +37,7 @@ export const crearStandService = async (crearStandDto) => {
 
         if (artesano.stand) {
             const error = new Error("El artesano ya tiene un stand asignado.");
-            error.status = 400;
+            error.status = 409;
             throw error;
         }
     }
