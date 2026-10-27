@@ -1,11 +1,25 @@
 import prisma from "../config/prisma.js";
 
+const verificarRubros = async (rubrosIds) => {
+    for (const rubroId of rubrosIds) {
+        const rubro = await prisma.rubro.findUnique({
+            where: { id: rubroId }
+        })
+        if (!rubro) {
+            const error = new Error(`No existe un rubro con ID ${rubroId}`);
+            error.status = 404;
+            throw error;
+        }
+    }
+}
+
 export const obtenerArtesanosService = async () => {
     return await prisma.artesano.findMany({
         include: {
             usuario: true,
             productos: true,
             stand: true,
+            rubros: { include: { rubro: true } },
         },
     });
 };
@@ -17,6 +31,7 @@ export const obtenerArtesanoPorIdService = async (id) => {
             usuario: true,
             productos: true,
             stand: true,
+            rubros: { include: { rubro: true } },
         },
     });
 
@@ -39,24 +54,38 @@ export const crearArtesanoService = async (crearArtesanoDto) => {
         error.status = 404;
         throw error;
     }
-    const { nombreEmprendimiento, trayectoria, localidad, rubro, usuarioId } = crearArtesanoDto;
+    const { nombreEmprendimiento, trayectoria, localidad, rubrosIds, usuarioId } = crearArtesanoDto;
+    await verificarRubros(rubrosIds)
     return await prisma.artesano.create({
         data: {
             nombreEmprendimiento,
             trayectoria,
             localidad,
-            rubro,
-            usuarioId
+            usuarioId,
+            rubros: {
+                create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } }))
+            }
         },
-        include: { usuario: true },
+        include: { usuario: true, rubros: { include: { rubro: true } } },
     });
 };
 
 export const actualizarArtesanoService = async (id, actualizarArtesanoDto) => {
+    const { rubrosIds, ...datos } = actualizarArtesanoDto;
+    const data = { ...datos };
+    // si mandan rubros, se borran los que tenia y se ponen los nuevos
+    if (rubrosIds) {
+        await verificarRubros(rubrosIds)
+        data.rubros = {
+            deleteMany: {},
+            create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } }))
+        }
+    }
     try {
         return await prisma.artesano.update({
             where: { id: Number(id) },
-            data: actualizarArtesanoDto,
+            data: data,
+            include: { rubros: { include: { rubro: true } } },
         });
     } catch (error) {
         if (error.code === "P2025") {
@@ -91,7 +120,7 @@ export const consultarArtesanosService = async (criteriosConsulta) => {
         where.localidad = { contains: localidad, mode: "insensitive" };
     }
     if (rubro) {
-        where.rubro = { contains: rubro, mode: "insensitive" };
+        where.rubros = { some: { rubro: { nombre: { contains: rubro, mode: "insensitive" } } } };
     }
     if (estadoSolicitud) {
         where.estadoSolicitud = estadoSolicitud;
@@ -105,7 +134,7 @@ export const consultarArtesanosService = async (criteriosConsulta) => {
             orderBy: [{ [ordenarPor]: direccion }, { id: "asc" }],
             skip: desplazamiento,
             take: limite,
-            include: { usuario: true }
+            include: { usuario: true, rubros: { include: { rubro: true } } }
         }),
         prisma.artesano.count({ where })
     ]);
@@ -123,7 +152,8 @@ export const obtenerMiArtesano = async (usuarioId) => {
     return prisma.artesano.findUniqueOrThrow({
         where: { usuarioId },
         select: { id: true, nombreEmprendimiento: true, trayectoria: true,
-            localidad: true, rubro: true, estadoSolicitud: true }
+            localidad: true, estadoSolicitud: true,
+            rubros: { select: { rubro: { select: { nombre: true } } } } }
     });
 };
 
@@ -136,11 +166,8 @@ export const asignarArtesano = async (dto) => {
         });
         const esAdmin = usuario.roles.some(
             a => a.rol.nombre === "ADMINISTRADOR");
-        if (!usuario.activo || !esAdmin ||
-            usuario.artesano) {
-            const error = new Error(
-                "Requiere administrador activo " +
-                "sin Artesano.");
+        if (!usuario.activo || !esAdmin || usuario.artesano) {
+            const error = new Error("Requiere administrador activo sin Artesano.");
             error.status = 409; throw error;
         }
         const actualizado = await tx.usuario.update({
@@ -149,7 +176,8 @@ export const asignarArtesano = async (dto) => {
                 artesano: { create: {
                     nombreEmprendimiento: dto.nombreEmprendimiento,
                     trayectoria: dto.trayectoria,
-                    localidad: dto.localidad, rubro: dto.rubro,
+                    localidad: dto.localidad,
+                    rubros: { create: dto.rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } })) },
                     estadoSolicitud: "APROBADO"
                 } },
                 roles: { create: {
