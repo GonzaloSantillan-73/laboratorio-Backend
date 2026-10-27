@@ -7,6 +7,7 @@ import productosRoutes from './src/routes/productos.routes.js'
 import usuarioRoutes from './src/routes/usuarios.routes.js'
 import rolesRoutes from './src/routes/roles.routes.js'
 import rubrosRoutes from './src/routes/rubros.routes.js'
+import pabellonesRoutes from './src/routes/pabellones.routes.js'
 import "./src/config/jwt.js"
 import { iniciarLimpiezaRevocaciones } from './src/tareas/limpiezaRevocaciones.js'
 
@@ -27,6 +28,7 @@ app.use('/api/productos', productosRoutes)
 app.use('/api/usuarios', usuarioRoutes)
 app.use('/api/roles', rolesRoutes)
 app.use('/api/rubros', rubrosRoutes)
+app.use('/api/pabellones', pabellonesRoutes)
 
 app.use((req, res, next) => {
     const error = new Error(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
