@@ -1,15 +1,26 @@
 import prisma from "../config/prisma.js";
 
+const verificarPabellon = async (pabellonId) => {
+    const pabellon = await prisma.pabellon.findUnique({
+        where: { id: pabellonId }
+    })
+    if (!pabellon) {
+        const error = new Error(`No existe un pabellón con ID ${pabellonId}`);
+        error.status = 404;
+        throw error;
+    }
+}
+
 export const obtenerStandsService = async () => {
     return await prisma.stand.findMany({
-        include: { artesano: true },
+        include: { artesano: true, pabellon: true },
     });
 };
 
 export const obtenerStandPorIdService = async (id) => {
     const stand = await prisma.stand.findUnique({
         where: { id: Number(id) },
-        include: { artesano: true },
+        include: { artesano: true, pabellon: true },
     });
 
     if (!stand) {
@@ -22,6 +33,7 @@ export const obtenerStandPorIdService = async (id) => {
 };
 
 export const crearStandService = async (crearStandDto) => {
+    await verificarPabellon(crearStandDto.pabellonId)
     // Si se envía un artesanoId, verificamos que exista y no tenga ya un stand asignado
     if (crearStandDto.artesanoId) {
         const artesano = await prisma.artesano.findUnique({
@@ -44,16 +56,19 @@ export const crearStandService = async (crearStandDto) => {
 
     return await prisma.stand.create({
         data: crearStandDto,
-        include: { artesano: true },
+        include: { artesano: true, pabellon: true },
     });
 };
 
 export const actualizarStandService = async (id, actualizarStandDto) => {
+    if (actualizarStandDto.pabellonId) {
+        await verificarPabellon(actualizarStandDto.pabellonId)
+    }
     try {
         return await prisma.stand.update({
             where: { id: Number(id) },
             data: actualizarStandDto,
-            include: { artesano: true },
+            include: { artesano: true, pabellon: true },
         });
     } catch (error) {
         if (error.code === "P2025") {
@@ -85,7 +100,7 @@ export const consultarStandsService = async (criteriosConsulta) => {
     
     const where = {};
     if (pabellon) {
-        where.pabellon = { contains: pabellon, mode: "insensitive" };
+        where.pabellon = { nombre: { contains: pabellon, mode: "insensitive" } };
     }
     if (sector) {
         where.sector = { contains: sector, mode: "insensitive" };
@@ -102,7 +117,7 @@ export const consultarStandsService = async (criteriosConsulta) => {
             orderBy: [{ [ordenarPor]: direccion }, { id: "asc" }],
             skip: desplazamiento,
             take: limite,
-            include: { artesano: true }
+            include: { artesano: true, pabellon: true }
         }),
         prisma.stand.count({ where })
     ]);
