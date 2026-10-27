@@ -1,0 +1,1709 @@
+==========================================================================
+ PRUEBAS EN POSTMAN - API FERIA DEL PONCHO
+==========================================================================
+
+Hacer las pruebas EN ORDEN, de arriba hacia abajo. Cada parte usa datos
+que se crearon en las partes anteriores (tokens, ids, etc.).
+
+Cada prueba tiene:
+  - METODO y URL      -> copiar en la barra de Postman
+  - Token             -> Authorization > Bearer Token
+  - Body              -> Body > raw > JSON (copiar y pegar tal cual)
+  - Esperado          -> lo que tiene que responder
+
+
+--------------------------------------------------------------------------
+ 0. PREPARACION (una sola vez, en la terminal)
+--------------------------------------------------------------------------
+
+npx prisma migrate reset
+npx prisma generate
+node --experimental-strip-types scripts/cargar-localidades.js
+node --experimental-strip-types scripts/inicializar-admin.js
+npm run dev
+
+Datos que quedan cargados:
+  Roles:        1 = ARTESANO, 2 = ADMINISTRADOR
+  Rubros:       1 Textil, 2 Cerámica, 3 Platería, 4 Cuero, 5 Madera, 6 Cestería
+  Pabellones:   1 Pabellón 1, 2 Pabellón 2, 3 Pabellón 3
+  Coordenadas:  ids 1 a 9, del punto (1,1) al (3,3)
+
+
+--------------------------------------------------------------------------
+ VARIABLES DE POSTMAN
+--------------------------------------------------------------------------
+
+Crear un Environment en Postman con estas variables (arriba a la derecha
+elegir ese Environment). La primera se completa ahora, las demás a medida
+que avanzan las pruebas: cada paso dice cuál guardar.
+
+  url             http://localhost:3000/api
+  tokenAdmin
+  idAdmin
+  localidadId
+  tokenAna
+  idAna
+  artesanoAna
+  tokenBruno
+  idBruno
+  artesanoBruno
+  tokenCarla
+  artesanoCarla
+  productoAna
+  productoBruno
+  standAna
+  standLibre
+  idElena
+  idDiego
+
+Postman reemplaza {{variable}} también adentro del body.
+
+IMPORTANTE: el token vence a los 15 minutos. Si de golpe todo responde
+401 "Token inválido, vencido o revocado", volver a hacer el login.
+
+
+==========================================================================
+ 1. LOGIN Y CUENTA DEL ADMINISTRADOR
+==========================================================================
+
+--- 1.1 Login del admin ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body (poner el email y la password que están en ADMIN_EMAIL y ADMIN_PASSWORD del .env):
+{
+  "email": "ADMIN_EMAIL_DEL_ENV",
+  "password": "ADMIN_PASSWORD_DEL_ENV"
+}
+Esperado: 200 con "token"
+>> Guardar el token en {{tokenAdmin}}
+
+--- 1.2 Mis datos ---
+GET {{url}}/usuarios/me
+Token: {{tokenAdmin}}
+Body: ninguno
+Esperado: 200, "activo": true, "roles": ["ADMINISTRADOR"]
+>> Guardar "id" en {{idAdmin}}
+
+--- 1.3 Login con password incorrecta ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "ADMIN_EMAIL_DEL_ENV",
+  "password": "cualquiercosa"
+}
+Esperado: 401 "Las credenciales son inválidas."
+
+--- 1.4 Login con email que no existe ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "noexiste@poncho.com",
+  "password": "cualquiercosa"
+}
+Esperado: 401 "Las credenciales son inválidas."
+
+--- 1.5 Login con email mal escrito ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "noesunmail",
+  "password": "x"
+}
+Esperado: 400
+
+--- 1.6 /me sin token ---
+GET {{url}}/usuarios/me
+Token: ninguno
+Esperado: 401 "Se requiere un token de acceso"
+
+--- 1.7 /me con un token inventado ---
+GET {{url}}/usuarios/me
+Token: abc123
+Esperado: 401 "Token inválido, vencido o revocado"
+
+
+==========================================================================
+ 2. CONSULTAS PUBLICAS (sin token, sin body)
+==========================================================================
+
+--- 2.1 ---  GET {{url}}/roles
+Esperado: 200, ARTESANO y ADMINISTRADOR
+
+--- 2.2 ---  GET {{url}}/rubros
+Esperado: 200, los 6 rubros
+
+--- 2.3 ---  GET {{url}}/pabellones
+Esperado: 200, los 3 pabellones
+
+--- 2.4 ---  GET {{url}}/coordenadas
+Esperado: 200, las coordenadas (de a 10 por página)
+
+--- 2.5 ---  GET {{url}}/coordenadas?x=2
+Esperado: 200, solo las que tienen x = 2
+
+--- 2.6 ---  GET {{url}}/provincias
+Esperado: 200, las 24 provincias
+
+--- 2.7 ---  GET {{url}}/departamentos?provinciaId=10
+Esperado: 200, los departamentos de Catamarca
+
+--- 2.8 ---  GET {{url}}/localidades?nombre=belen&provinciaId=10
+Esperado: 200, aparece BELEN
+>> Copiar el "id" de BELEN y guardarlo en {{localidadId}}
+
+--- 2.9 ---  GET {{url}}/localidades/{{localidadId}}
+Esperado: 200, con su departamento y su provincia
+
+--- 2.10 --- GET {{url}}/localidades/999
+Esperado: 404
+
+--- 2.11 --- GET {{url}}/localidades/abc
+Esperado: 400 "ID inválido."
+
+--- 2.12 --- GET {{url}}/rubros?pagina=1&limite=2
+Esperado: 200, 2 rubros y "totalPaginas": 3
+
+--- 2.13 --- GET {{url}}/rubros?limite=100
+Esperado: 400 (el máximo es 50)
+
+
+==========================================================================
+ 3. CATALOGOS (solo admin)
+==========================================================================
+
+---------- RUBROS ----------
+
+--- 3.1 Crear rubro ---
+POST {{url}}/rubros
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Vidrio"
+}
+Esperado: 201 (debería quedar con id 7)
+
+--- 3.2 Crear rubro repetido ---
+POST {{url}}/rubros
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Vidrio"
+}
+Esperado: 409 "Ya existe un registro con esos datos únicos."
+
+--- 3.3 Crear rubro sin token ---
+POST {{url}}/rubros
+Token: ninguno
+Body:
+{
+  "nombre": "Mimbre"
+}
+Esperado: 401
+
+--- 3.4 Crear rubro con nombre vacío ---
+POST {{url}}/rubros
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": ""
+}
+Esperado: 400
+
+--- 3.5 Editar rubro ---
+PUT {{url}}/rubros/7
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Vidrio soplado"
+}
+Esperado: 200
+
+--- 3.6 Ver rubro ---
+GET {{url}}/rubros/7
+Token: ninguno
+Esperado: 200, "nombre": "Vidrio soplado"
+
+--- 3.7 Borrar rubro ---
+DELETE {{url}}/rubros/7
+Token: {{tokenAdmin}}
+Esperado: 204
+
+--- 3.8 Ver rubro borrado ---
+GET {{url}}/rubros/7
+Token: ninguno
+Esperado: 404
+
+--- 3.9 Id que no es número ---
+GET {{url}}/rubros/abc
+Token: ninguno
+Esperado: 400 "ID inválido"
+
+---------- PABELLONES ----------
+
+--- 3.10 Crear pabellón ---
+POST {{url}}/pabellones
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Pabellón 4"
+}
+Esperado: 201 (id 4)
+
+--- 3.11 Editar pabellón ---
+PUT {{url}}/pabellones/4
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Pabellón Norte"
+}
+Esperado: 200
+
+--- 3.12 Borrar pabellón ---
+DELETE {{url}}/pabellones/4
+Token: {{tokenAdmin}}
+Esperado: 204
+
+--- 3.13 Ver pabellón con sus stands ---
+GET {{url}}/pabellones/1
+Token: ninguno
+Esperado: 200, con "stands": []
+
+---------- COORDENADAS ----------
+
+--- 3.14 Crear coordenada ---
+POST {{url}}/coordenadas
+Token: {{tokenAdmin}}
+Body:
+{
+  "x": 4,
+  "y": 1
+}
+Esperado: 201 (id 10)
+
+--- 3.15 Crear coordenada repetida ---
+POST {{url}}/coordenadas
+Token: {{tokenAdmin}}
+Body:
+{
+  "x": 1,
+  "y": 1
+}
+Esperado: 409 (ese punto ya existe)
+
+--- 3.16 Crear coordenada negativa ---
+POST {{url}}/coordenadas
+Token: {{tokenAdmin}}
+Body:
+{
+  "x": -1,
+  "y": 1
+}
+Esperado: 400
+
+--- 3.17 Editar coordenada ---
+PUT {{url}}/coordenadas/10
+Token: {{tokenAdmin}}
+Body:
+{
+  "x": 4,
+  "y": 2
+}
+Esperado: 200
+
+--- 3.18 Borrar coordenada ---
+DELETE {{url}}/coordenadas/10
+Token: {{tokenAdmin}}
+Esperado: 204
+
+---------- ROLES ----------
+
+--- 3.19 Crear rol ---
+POST {{url}}/roles
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "INVITADO"
+}
+Esperado: 201 (id 3)
+
+--- 3.20 Editar rol ---
+PUT {{url}}/roles/3
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "VISITA"
+}
+Esperado: 200
+
+--- 3.21 Borrar rol ---
+DELETE {{url}}/roles/3
+Token: {{tokenAdmin}}
+Esperado: 204
+
+--- 3.22 Borrar un rol que alguien usa ---
+DELETE {{url}}/roles/2
+Token: {{tokenAdmin}}
+Esperado: 409 (ADMINISTRADOR lo tiene el admin)
+
+
+==========================================================================
+ 4. POSTULACION DE ARTESANOS (pública, sin token)
+==========================================================================
+
+--- 4.1 Postulación de Ana ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Ana",
+  "apellido": "Pérez",
+  "email": "ana@poncho.com",
+  "password": "ClaveAna2026",
+  "nombreEmprendimiento": "Telares de Ana",
+  "trayectoria": "15 años tejiendo en telar criollo",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [1, 4]
+}
+Esperado: 201, "artesano": { "estadoSolicitud": "PENDIENTE" }. Sin passwordHash.
+>> Guardar "id" en {{idAna}}
+>> Guardar "artesano.id" en {{artesanoAna}}
+
+--- 4.2 Postulación de Bruno ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Bruno",
+  "apellido": "Gómez",
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026",
+  "nombreEmprendimiento": "Platería Gómez",
+  "trayectoria": "Orfebre desde 2005",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [3]
+}
+Esperado: 201
+>> Guardar "id" en {{idBruno}}
+>> Guardar "artesano.id" en {{artesanoBruno}}
+
+--- 4.3 Postulación de Carla ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Carla",
+  "apellido": "Ruiz",
+  "email": "carla@poncho.com",
+  "password": "ClaveCarla2026",
+  "nombreEmprendimiento": "Cerámica Ruiz",
+  "trayectoria": "Alfarera de tercera generación",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [2]
+}
+Esperado: 201
+>> Guardar "artesano.id" en {{artesanoCarla}}
+
+--- 4.4 Email repetido ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Ana",
+  "apellido": "Pérez",
+  "email": "ana@poncho.com",
+  "password": "ClaveAna2026",
+  "nombreEmprendimiento": "Telares de Ana",
+  "trayectoria": "15 años tejiendo en telar criollo",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [1, 4]
+}
+Esperado: 409
+
+--- 4.5 Intentar elegir el rol ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro2026",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [6],
+  "rol": "ADMINISTRADOR"
+}
+Esperado: 400 (.strict() rechaza el campo "rol")
+
+--- 4.6 Intentar aprobarse solo ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro2026",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [6],
+  "estadoSolicitud": "APROBADO"
+}
+Esperado: 400
+
+--- 4.7 Sin rubros ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro2026",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": []
+}
+Esperado: 400 "Debe tener al menos un rubro"
+
+--- 4.8 Password corta ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "corta",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [6]
+}
+Esperado: 400 (mínimo 8 caracteres)
+
+--- 4.9 Localidad que no existe ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro2026",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "999",
+  "rubrosIds": [6]
+}
+Esperado: 404
+
+--- 4.10 Rubro que no existe ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro2026",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [99]
+}
+Esperado: 404
+
+
+==========================================================================
+ 5. ARTESANO PENDIENTE: TODAVIA NO PUEDE OPERAR
+==========================================================================
+
+--- 5.1 Login de Ana ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "ana@poncho.com",
+  "password": "ClaveAna2026"
+}
+Esperado: 200
+>> Guardar el token en {{tokenAna}}
+
+--- 5.2 Mis datos de Ana ---
+GET {{url}}/usuarios/me
+Token: {{tokenAna}}
+Esperado: 200 con "roles": []   (todavía no tiene ARTESANO)
+
+--- 5.3 Ana intenta crear un producto ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Poncho",
+  "descripcion": "De lana de oveja",
+  "precio": 50000,
+  "stock": 2
+}
+Esperado: 403 "No tiene permiso para esta operación."
+
+--- 5.4 Ana intenta ver su artesano ---
+GET {{url}}/artesanos/me
+Token: {{tokenAna}}
+Esperado: 403
+
+--- 5.5 Detalle público de un pendiente ---
+GET {{url}}/artesanos/{{artesanoAna}}
+Token: ninguno
+Esperado: 404 (el público solo ve artesanos APROBADOS)
+
+--- 5.6 Listado público ---
+GET {{url}}/artesanos
+Token: ninguno
+Esperado: 200 con la lista vacía (todavía no hay aprobados)
+
+
+==========================================================================
+ 6. EL ADMIN RESUELVE LAS SOLICITUDES
+==========================================================================
+
+--- 6.1 Ver solicitudes pendientes ---
+GET {{url}}/artesanos/solicitudes?estadoSolicitud=PENDIENTE
+Token: {{tokenAdmin}}
+Esperado: 200, Ana, Bruno y Carla
+
+--- 6.2 Solicitudes sin token ---
+GET {{url}}/artesanos/solicitudes
+Token: ninguno
+Esperado: 401
+
+--- 6.3 Solicitudes con token de Ana ---
+GET {{url}}/artesanos/solicitudes
+Token: {{tokenAna}}
+Esperado: 403
+
+--- 6.4 Aprobar a Ana ---
+PATCH {{url}}/artesanos/{{artesanoAna}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 200, "estadoSolicitud": "APROBADO"
+
+--- 6.5 Aprobar a Ana otra vez ---
+PATCH {{url}}/artesanos/{{artesanoAna}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 409 "La solicitud ya fue resuelta."
+
+--- 6.6 Aprobar a Bruno ---
+PATCH {{url}}/artesanos/{{artesanoBruno}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 200
+
+--- 6.7 Pedirle modificaciones a Carla ---
+PATCH {{url}}/artesanos/{{artesanoCarla}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "MODIFICACIONES"
+}
+Esperado: 200
+
+--- 6.8 Rechazar a Carla ---
+PATCH {{url}}/artesanos/{{artesanoCarla}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "RECHAZADO"
+}
+Esperado: 200
+
+--- 6.9 Aprobar a Carla después de rechazarla ---
+PATCH {{url}}/artesanos/{{artesanoCarla}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 409 "La solicitud ya fue resuelta."
+
+--- 6.10 Volver a PENDIENTE ---
+PATCH {{url}}/artesanos/{{artesanoAna}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "PENDIENTE"
+}
+Esperado: 400 "Estado de solicitud inválido."
+
+--- 6.11 Artesano que no existe ---
+PATCH {{url}}/artesanos/999/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 404
+
+--- 6.12 Ana intenta aprobarse ---
+PATCH {{url}}/artesanos/{{artesanoAna}}/solicitud
+Token: {{tokenAna}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 403
+
+--- 6.13 Login de Ana de nuevo ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "ana@poncho.com",
+  "password": "ClaveAna2026"
+}
+Esperado: 200
+>> Guardar el token en {{tokenAna}}
+
+--- 6.14 Login de Bruno ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026"
+}
+Esperado: 200
+>> Guardar el token en {{tokenBruno}}
+
+--- 6.15 Mis datos de Ana ---
+GET {{url}}/usuarios/me
+Token: {{tokenAna}}
+Esperado: 200 con "roles": ["ARTESANO"]
+
+--- 6.16 Mi artesano ---
+GET {{url}}/artesanos/me
+Token: {{tokenAna}}
+Esperado: 200, sus datos, rubros y localidad con provincia
+
+--- 6.17 Listado público ---
+GET {{url}}/artesanos
+Token: ninguno
+Esperado: 200, solo Ana y Bruno (Carla no aparece). Sin passwordHash.
+
+--- 6.18 Filtrar por rubro ---
+GET {{url}}/artesanos?rubro=textil
+Token: ninguno
+Esperado: 200, solo Ana
+
+--- 6.19 Filtrar por localidad ---
+GET {{url}}/artesanos?localidad=belen
+Token: ninguno
+Esperado: 200, Ana y Bruno
+
+--- 6.20 Ordenar ---
+GET {{url}}/artesanos?ordenarPor=nombreEmprendimiento&direccion=desc
+Token: ninguno
+Esperado: 200, primero Telares de Ana, después Platería Gómez
+
+
+==========================================================================
+ 7. PRODUCTOS (solo ARTESANO, cada uno con los suyos)
+==========================================================================
+
+--- 7.1 Ana crea un producto ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Poncho catamarqueño",
+  "descripcion": "Poncho de vicuña tejido a mano",
+  "precio": 85000,
+  "stock": 3
+}
+Esperado: 201, a nombre del artesano de Ana
+>> Guardar "id" en {{productoAna}}
+
+--- 7.2 Bruno crea un producto ---
+POST {{url}}/productos
+Token: {{tokenBruno}}
+Body:
+{
+  "nombre": "Mate de plata",
+  "descripcion": "Mate cincelado a mano",
+  "precio": 60000,
+  "stock": 5
+}
+Esperado: 201
+>> Guardar "id" en {{productoBruno}}
+
+--- 7.3 Mandar el artesanoId en el body ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Faja",
+  "descripcion": "Faja tejida",
+  "precio": 10000,
+  "stock": 4,
+  "artesanoId": 2
+}
+Esperado: 400 (el artesano sale del token, no del body)
+
+--- 7.4 Precio negativo ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Faja",
+  "descripcion": "Faja tejida",
+  "precio": -10,
+  "stock": 4
+}
+Esperado: 400
+
+--- 7.5 Stock con decimales ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Faja",
+  "descripcion": "Faja tejida",
+  "precio": 10000,
+  "stock": 1.5
+}
+Esperado: 400
+
+--- 7.6 Crear sin token ---
+POST {{url}}/productos
+Token: ninguno
+Body:
+{
+  "nombre": "Faja",
+  "descripcion": "Faja tejida",
+  "precio": 10000,
+  "stock": 4
+}
+Esperado: 401
+
+--- 7.7 Crear con token de admin ---
+POST {{url}}/productos
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Faja",
+  "descripcion": "Faja tejida",
+  "precio": 10000,
+  "stock": 4
+}
+Esperado: 403 (el admin no es artesano)
+
+--- 7.8 Mis productos ---
+GET {{url}}/productos/me
+Token: {{tokenAna}}
+Esperado: 200, solo el poncho de Ana
+
+--- 7.9 Mis productos intentando ver los de otro ---
+GET {{url}}/productos/me?artesanoId=2
+Token: {{tokenAna}}
+Esperado: 200, siguen saliendo solo los de Ana
+
+--- 7.10 Catálogo público ---
+GET {{url}}/productos
+Token: ninguno
+Esperado: 200, el poncho y el mate
+
+--- 7.11 Detalle público ---
+GET {{url}}/productos/{{productoAna}}
+Token: ninguno
+Esperado: 200
+
+--- 7.12 Buscar por nombre ---
+GET {{url}}/productos?nombre=mate
+Token: ninguno
+Esperado: 200, solo el mate
+
+--- 7.13 Ordenar por precio ---
+GET {{url}}/productos?ordenPor=precio&direccion=desc
+Token: ninguno
+Esperado: 200, primero el poncho
+
+--- 7.14 Ana edita su producto ---
+PUT {{url}}/productos/{{productoAna}}
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Poncho catamarqueño",
+  "descripcion": "Poncho de vicuña tejido en telar criollo",
+  "precio": 90000,
+  "stock": 2
+}
+Esperado: 200
+
+--- 7.15 Ana intenta editar el producto de Bruno ---
+PUT {{url}}/productos/{{productoBruno}}
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Mate trucho",
+  "descripcion": "Lo cambió Ana",
+  "precio": 1,
+  "stock": 1
+}
+Esperado: 404 "No existe un producto con ID ..." (el mate de Bruno no cambia)
+
+--- 7.16 Ana intenta borrar el producto de Bruno ---
+DELETE {{url}}/productos/{{productoBruno}}
+Token: {{tokenAna}}
+Esperado: 404 (el mate de Bruno sigue existiendo)
+
+--- 7.17 Editar un producto que no existe ---
+PUT {{url}}/productos/999
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Poncho",
+  "descripcion": "No existe",
+  "precio": 100,
+  "stock": 1
+}
+Esperado: 404 (mismo mensaje que el de un producto ajeno)
+
+--- 7.18 Desactivar su producto ---
+PATCH {{url}}/productos/{{productoAna}}/activo
+Token: {{tokenAna}}
+Body:
+{
+  "activo": false
+}
+Esperado: 200, "activo": false
+
+--- 7.19 Catálogo (activos) ---
+GET {{url}}/productos
+Token: ninguno
+Esperado: 200, solo el mate (el poncho está desactivado)
+
+--- 7.20 Catálogo (inactivos) ---
+GET {{url}}/productos?activo=false
+Token: ninguno
+Esperado: 200, solo el poncho
+
+--- 7.21 Filtro activo mal escrito ---
+GET {{url}}/productos?activo=no
+Token: ninguno
+Esperado: 400
+
+--- 7.22 Desactivar el producto de otro ---
+PATCH {{url}}/productos/{{productoBruno}}/activo
+Token: {{tokenAna}}
+Body:
+{
+  "activo": false
+}
+Esperado: 404
+
+--- 7.23 Activo como texto ---
+PATCH {{url}}/productos/{{productoAna}}/activo
+Token: {{tokenAna}}
+Body:
+{
+  "activo": "no"
+}
+Esperado: 400 "Campo activo inválido."
+
+--- 7.24 Volver a activar su producto ---
+PATCH {{url}}/productos/{{productoAna}}/activo
+Token: {{tokenAna}}
+Body:
+{
+  "activo": true
+}
+Esperado: 200, "activo": true
+
+
+==========================================================================
+ 8. STANDS (GET público, el resto solo admin)
+==========================================================================
+
+--- 8.1 Crear el stand de Ana ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "A",
+  "coordenadaId": 1,
+  "estado": "OCUPADO",
+  "artesanoId": {{artesanoAna}}
+}
+Esperado: 201, con pabellón, coordenada y artesano
+>> Guardar "id" en {{standAna}}
+
+--- 8.2 Crear un stand libre ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "B",
+  "coordenadaId": 2
+}
+Esperado: 201, "estado": "DISPONIBLE"
+>> Guardar "id" en {{standLibre}}
+
+--- 8.3 Coordenada ocupada ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 1
+}
+Esperado: 409 "La coordenada ya está ocupada por otro stand."
+
+--- 8.4 Artesano que ya tiene stand ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 3,
+  "artesanoId": {{artesanoAna}}
+}
+Esperado: 409 "El artesano ya tiene un stand asignado."
+
+--- 8.5 Pabellón que no existe ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 99,
+  "sector": "C",
+  "coordenadaId": 3
+}
+Esperado: 404
+
+--- 8.6 Coordenada que no existe ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 99
+}
+Esperado: 404
+
+--- 8.7 Artesano que no existe ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 3,
+  "artesanoId": 999
+}
+Esperado: 404
+
+--- 8.8 Estado inválido ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 3,
+  "estado": "ROTO"
+}
+Esperado: 400
+
+--- 8.9 Crear sin token ---
+POST {{url}}/stands
+Token: ninguno
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 3
+}
+Esperado: 401
+
+--- 8.10 Crear con token de Ana ---
+POST {{url}}/stands
+Token: {{tokenAna}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "C",
+  "coordenadaId": 3
+}
+Esperado: 403
+
+--- 8.11 Listado público ---
+GET {{url}}/stands
+Token: ninguno
+Esperado: 200, los dos stands
+
+--- 8.12 Detalle público ---
+GET {{url}}/stands/{{standAna}}
+Token: ninguno
+Esperado: 200
+
+--- 8.13 Filtrar por estado ---
+GET {{url}}/stands?estado=DISPONIBLE
+Token: ninguno
+Esperado: 200, solo el libre
+
+--- 8.14 Filtrar por pabellón ---
+GET {{url}}/stands?pabellon=1
+Token: ninguno
+Esperado: 200, los dos (busca por el nombre del pabellón)
+
+--- 8.15 Filtrar por sector ---
+GET {{url}}/stands?sector=a
+Token: ninguno
+Esperado: 200, solo el de Ana
+
+--- 8.16 Editar el sector ---
+PUT {{url}}/stands/{{standAna}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "sector": "A2"
+}
+Esperado: 200
+
+--- 8.17 Mover a una coordenada ocupada ---
+PUT {{url}}/stands/{{standAna}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "coordenadaId": 2
+}
+Esperado: 409 (la usa el stand libre)
+
+--- 8.18 Mandar su propia coordenada ---
+PUT {{url}}/stands/{{standAna}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "coordenadaId": 1
+}
+Esperado: 200 (es la suya, no choca)
+
+--- 8.19 Borrar un pabellón con stands ---
+DELETE {{url}}/pabellones/1
+Token: {{tokenAdmin}}
+Esperado: 409
+
+--- 8.20 Borrar una coordenada en uso ---
+DELETE {{url}}/coordenadas/1
+Token: {{tokenAdmin}}
+Esperado: 409
+
+--- 8.21 Borrar un rubro en uso ---
+DELETE {{url}}/rubros/1
+Token: {{tokenAdmin}}
+Esperado: 409 (lo usa Ana)
+
+--- 8.22 Borrar el stand libre ---
+DELETE {{url}}/stands/{{standLibre}}
+Token: {{tokenAdmin}}
+Esperado: 200 "Stand eliminado exitosamente"
+
+--- 8.23 Borrarlo otra vez ---
+DELETE {{url}}/stands/{{standLibre}}
+Token: {{tokenAdmin}}
+Esperado: 404
+
+
+==========================================================================
+ 9. ARTESANOS: GESTION DEL ADMIN
+==========================================================================
+
+--- 9.1 Editar un artesano ---
+PUT {{url}}/artesanos/{{artesanoAna}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "trayectoria": "20 años tejiendo en telar criollo",
+  "rubrosIds": [1, 4, 6]
+}
+Esperado: 200, ahora con 3 rubros
+
+--- 9.2 Editar con localidad que no existe ---
+PUT {{url}}/artesanos/{{artesanoAna}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "localidadId": "999"
+}
+Esperado: 404
+
+--- 9.3 Editar con rubro que no existe ---
+PUT {{url}}/artesanos/{{artesanoAna}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "rubrosIds": [99]
+}
+Esperado: 404
+
+--- 9.4 Editar sin token ---
+PUT {{url}}/artesanos/{{artesanoAna}}
+Token: ninguno
+Body:
+{
+  "trayectoria": "La cambio sin token"
+}
+Esperado: 401
+
+--- 9.5 Editar con token de Ana ---
+PUT {{url}}/artesanos/{{artesanoAna}}
+Token: {{tokenAna}}
+Body:
+{
+  "trayectoria": "Me la cambio yo"
+}
+Esperado: 403
+
+
+==========================================================================
+ 10. USUARIOS: GESTION DEL ADMIN
+==========================================================================
+
+--- 10.1 Listado de usuarios ---
+GET {{url}}/usuarios
+Token: {{tokenAdmin}}
+Esperado: 200, sin passwordHash
+
+--- 10.2 Filtrar por rol ---
+GET {{url}}/usuarios?rolId=1
+Token: {{tokenAdmin}}
+Esperado: 200, solo los que tienen ARTESANO (Ana y Bruno)
+
+--- 10.3 Filtrar por email ---
+GET {{url}}/usuarios?email=ana
+Token: {{tokenAdmin}}
+Esperado: 200, solo Ana
+
+--- 10.4 Detalle de un usuario ---
+GET {{url}}/usuarios/{{idAna}}
+Token: {{tokenAdmin}}
+Esperado: 200, con sus roles
+
+--- 10.5 Id que no es uuid ---
+GET {{url}}/usuarios/123
+Token: {{tokenAdmin}}
+Esperado: 400 "ID inválido."
+
+--- 10.6 Listado sin token ---
+GET {{url}}/usuarios
+Token: ninguno
+Esperado: 401
+
+--- 10.7 Listado con token de Ana ---
+GET {{url}}/usuarios
+Token: {{tokenAna}}
+Esperado: 403
+
+--- 10.8 Crear un usuario con roles ---
+POST {{url}}/usuarios
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Elena",
+  "apellido": "Díaz",
+  "email": "elena@poncho.com",
+  "password": "ClaveElena",
+  "rolesIds": [1]
+}
+Esperado: 201
+>> Guardar "id" en {{idElena}}
+
+--- 10.9 Crear un usuario sin roles ---
+POST {{url}}/usuarios
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro",
+  "rolesIds": []
+}
+Esperado: 400 "Debe tener al menos un rol"
+
+--- 10.10 Crear un usuario con un rol que no existe ---
+POST {{url}}/usuarios
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro",
+  "rolesIds": [99]
+}
+Esperado: 400 "No existe un rol con ID 99"
+
+--- 10.11 Crear el artesano de Elena (POST /artesanos) ---
+POST {{url}}/artesanos
+Token: {{tokenAdmin}}
+Body:
+{
+  "usuarioId": "{{idElena}}",
+  "nombreEmprendimiento": "Cuero Díaz",
+  "trayectoria": "Talabartera",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [4]
+}
+Esperado: 201
+
+--- 10.12 Crearle otro artesano a Elena ---
+POST {{url}}/artesanos
+Token: {{tokenAdmin}}
+Body:
+{
+  "usuarioId": "{{idElena}}",
+  "nombreEmprendimiento": "Cuero Díaz 2",
+  "trayectoria": "Talabartera",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [4]
+}
+Esperado: 409 (Elena ya tiene artesano)
+
+--- 10.13 Artesano con usuarioId inválido ---
+POST {{url}}/artesanos
+Token: {{tokenAdmin}}
+Body:
+{
+  "usuarioId": "123",
+  "nombreEmprendimiento": "Cuero",
+  "trayectoria": "Talabartero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [4]
+}
+Esperado: 400
+
+--- 10.14 Crear otro administrador ---
+POST {{url}}/usuarios/registro-administrador
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Diego",
+  "apellido": "López",
+  "email": "diego@poncho.com",
+  "password": "ClaveDiego2026"
+}
+Esperado: 201
+>> Guardar "id" en {{idDiego}}
+
+--- 10.15 Crear el mismo administrador otra vez ---
+POST {{url}}/usuarios/registro-administrador
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Diego",
+  "apellido": "López",
+  "email": "diego@poncho.com",
+  "password": "ClaveDiego2026"
+}
+Esperado: 409
+
+--- 10.16 Crear administrador con token de Ana ---
+POST {{url}}/usuarios/registro-administrador
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Truchada",
+  "apellido": "Admin",
+  "email": "trucho@poncho.com",
+  "password": "ClaveTrucha2026"
+}
+Esperado: 403
+
+--- 10.17 Darle a Diego su registro de artesano ---
+POST {{url}}/usuarios/asignar-artesano
+Token: {{tokenAdmin}}
+Body:
+{
+  "usuarioId": "{{idDiego}}",
+  "nombreEmprendimiento": "Maderas López",
+  "trayectoria": "Tallador en algarrobo",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [5]
+}
+Esperado: 201. Diego queda con ADMINISTRADOR y ARTESANO, y su artesano APROBADO.
+
+--- 10.18 Asignarle artesano a Diego otra vez ---
+POST {{url}}/usuarios/asignar-artesano
+Token: {{tokenAdmin}}
+Body:
+{
+  "usuarioId": "{{idDiego}}",
+  "nombreEmprendimiento": "Maderas López",
+  "trayectoria": "Tallador en algarrobo",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [5]
+}
+Esperado: 409 "Requiere administrador activo sin Artesano."
+
+--- 10.19 Asignar artesano a alguien que no es admin ---
+POST {{url}}/usuarios/asignar-artesano
+Token: {{tokenAdmin}}
+Body:
+{
+  "usuarioId": "{{idAna}}",
+  "nombreEmprendimiento": "Otro emprendimiento",
+  "trayectoria": "Tejedora",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [1]
+}
+Esperado: 409
+
+--- 10.20 Darle el rol ADMINISTRADOR a Ana ---
+POST {{url}}/usuarios/{{idAna}}/roles
+Token: {{tokenAdmin}}
+Body:
+{
+  "rol": "ADMINISTRADOR"
+}
+Esperado: 200 "Rol ADMINISTRADOR asignado." (Ana conserva ARTESANO)
+
+--- 10.21 Darle el rol otra vez ---
+POST {{url}}/usuarios/{{idAna}}/roles
+Token: {{tokenAdmin}}
+Body:
+{
+  "rol": "ADMINISTRADOR"
+}
+Esperado: 200, no se duplica
+
+--- 10.22 Intentar asignar ARTESANO ---
+POST {{url}}/usuarios/{{idAna}}/roles
+Token: {{tokenAdmin}}
+Body:
+{
+  "rol": "ARTESANO"
+}
+Esperado: 400 "Solo se puede asignar ADMINISTRADOR."
+
+--- 10.23 Asignar rol con id inválido ---
+POST {{url}}/usuarios/123/roles
+Token: {{tokenAdmin}}
+Body:
+{
+  "rol": "ADMINISTRADOR"
+}
+Esperado: 400 "ID inválido."
+
+--- 10.24 Quitarle ADMINISTRADOR a Ana ---
+DELETE {{url}}/usuarios/{{idAna}}/roles/ADMINISTRADOR
+Token: {{tokenAdmin}}
+Esperado: 204 (Ana queda solo con ARTESANO)
+
+--- 10.25 Quitarle a Ana su único rol ---
+DELETE {{url}}/usuarios/{{idAna}}/roles/ARTESANO
+Token: {{tokenAdmin}}
+Esperado: 409 "Debe conservar un rol."
+
+--- 10.26 Quitarle ARTESANO a Diego ---
+DELETE {{url}}/usuarios/{{idDiego}}/roles/ARTESANO
+Token: {{tokenAdmin}}
+Esperado: 204 (Diego queda solo con ADMINISTRADOR)
+
+--- 10.27 Rol que no existe ---
+DELETE {{url}}/usuarios/{{idAna}}/roles/OTRO
+Token: {{tokenAdmin}}
+Esperado: 400
+
+--- 10.28 Desactivar a Bruno ---
+PATCH {{url}}/usuarios/{{idBruno}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": false
+}
+Esperado: 200, "activo": false
+
+--- 10.29 Bruno con su token viejo ---
+GET {{url}}/usuarios/me
+Token: {{tokenBruno}}
+Esperado: 403 "Cuenta inactiva."
+
+--- 10.30 Bruno intenta entrar ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026"
+}
+Esperado: 401 "Las credenciales son inválidas."
+
+--- 10.31 Activo como texto ---
+PATCH {{url}}/usuarios/{{idBruno}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": "no"
+}
+Esperado: 400 "Campo activo inválido."
+
+--- 10.32 Reactivar a Bruno ---
+PATCH {{url}}/usuarios/{{idBruno}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": true
+}
+Esperado: 200 (Bruno vuelve a poder usar su token)
+
+--- 10.33 Desactivar a Diego ---
+PATCH {{url}}/usuarios/{{idDiego}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": false
+}
+Esperado: 200
+
+--- 10.34 Desactivar al último admin activo ---
+PATCH {{url}}/usuarios/{{idAdmin}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": false
+}
+Esperado: 409 "Debe quedar un administrador activo."
+
+--- 10.35 Reactivar a Diego ---
+PATCH {{url}}/usuarios/{{idDiego}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": true
+}
+Esperado: 200
+
+--- 10.36 Editar un usuario ---
+PUT {{url}}/usuarios/{{idElena}}
+Token: {{tokenAdmin}}
+Body:
+{
+  "nombre": "Elena",
+  "apellido": "Díaz Gómez",
+  "email": "elena@poncho.com",
+  "password": "NuevaClave",
+  "rolesIds": [1]
+}
+Esperado: 200
+
+--- 10.37 Borrar un usuario ---
+DELETE {{url}}/usuarios/{{idElena}}
+Token: {{tokenAdmin}}
+Esperado: 204 (también se borra su artesano)
+
+--- 10.38 Borrarlo otra vez ---
+DELETE {{url}}/usuarios/{{idElena}}
+Token: {{tokenAdmin}}
+Esperado: 404
+
+
+==========================================================================
+ 11. CONSULTAS (búsquedas que hacen los visitantes)
+==========================================================================
+
+--- 11.1 Registrar una búsqueda ---
+POST {{url}}/consultas
+Token: ninguno
+Body:
+{
+  "terminoBusqueda": "poncho",
+  "filtroAplicado": "rubro:textil"
+}
+Esperado: 201
+>> Anotar el "id" (debería ser 1)
+
+--- 11.2 Búsqueda vacía ---
+POST {{url}}/consultas
+Token: ninguno
+Body:
+{}
+Esperado: 400 (necesita terminoBusqueda o filtroAplicado)
+
+--- 11.3 Ver las búsquedas ---
+GET {{url}}/consultas
+Token: {{tokenAdmin}}
+Esperado: 200
+
+--- 11.4 Ver una búsqueda ---
+GET {{url}}/consultas/1
+Token: {{tokenAdmin}}
+Esperado: 200
+
+--- 11.5 Ver las búsquedas sin token ---
+GET {{url}}/consultas
+Token: ninguno
+Esperado: 401
+
+--- 11.6 Borrar una búsqueda ---
+DELETE {{url}}/consultas/1
+Token: {{tokenAdmin}}
+Esperado: 200
+
+--- 11.7 Borrarla otra vez ---
+DELETE {{url}}/consultas/1
+Token: {{tokenAdmin}}
+Esperado: 404
+
+OJO: "usuarioId" en consultas está validado como número, pero los ids de
+usuario son uuid. Si se manda "usuarioId", da 400. Probar sin ese campo.
+
+
+==========================================================================
+ 12. CERRAR SESION
+==========================================================================
+
+--- 12.1 Logout de Bruno ---
+POST {{url}}/usuarios/logout
+Token: {{tokenBruno}}
+Body: ninguno
+Esperado: 204
+
+--- 12.2 Usar el mismo token después del logout ---
+GET {{url}}/usuarios/me
+Token: {{tokenBruno}}
+Esperado: 401 "Token inválido, vencido o revocado"
+
+--- 12.3 Login de Bruno de nuevo ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026"
+}
+Esperado: 200, token nuevo
+
+
+==========================================================================
+ 13. LIMPIEZA FINAL (opcional)
+==========================================================================
+
+--- 13.1 Ana borra su producto ---
+DELETE {{url}}/productos/{{productoAna}}
+Token: {{tokenAna}}
+Esperado: 204
+
+--- 13.2 Ver el producto borrado ---
+GET {{url}}/productos/{{productoAna}}
+Token: ninguno
+Esperado: 404
+
+--- 13.3 Borrar el stand de Ana ---
+DELETE {{url}}/stands/{{standAna}}
+Token: {{tokenAdmin}}
+Esperado: 200
+
+--- 13.4 Ahora sí, borrar la coordenada 1 ---
+DELETE {{url}}/coordenadas/1
+Token: {{tokenAdmin}}
+Esperado: 204 (ya no la usa ningún stand)
+
+--- 13.5 Borrar el artesano de Bruno ---
+DELETE {{url}}/artesanos/{{artesanoBruno}}
+Token: {{tokenAdmin}}
+Esperado: 200
+
+
+==========================================================================
+ QUE SIGNIFICA CADA CODIGO
+==========================================================================
+
+  200  OK, devuelve datos
+  201  Se creó el registro
+  204  Se hizo, sin contenido (borrados, logout, retirar rol)
+  400  Los datos enviados están mal (Zod)
+  401  No sé quién sos: sin token, token inválido, vencido o revocado
+  403  Sé quién sos pero no tenés el rol, o tu cuenta está inactiva
+  404  No existe, o no es tuyo (productos ajenos, artesanos no aprobados)
+  409  Dato repetido o se rompe una regla (último admin, único rol,
+       coordenada ocupada, solicitud ya resuelta, registro con relaciones)
+
+
+==========================================================================
+ RESUMEN DE TODAS LAS RUTAS
+==========================================================================
+
+ PUBLICAS (sin token)
+  POST   /usuarios/postulacion
+  POST   /usuarios/login
+  GET    /artesanos                 (solo aprobados)
+  GET    /artesanos/:id             (solo aprobados)
+  GET    /productos                 (?activo=false para ver inactivos)
+  GET    /productos/:id
+  GET    /stands
+  GET    /stands/:id
+  GET    /roles, /roles/:id
+  GET    /rubros, /rubros/:id
+  GET    /pabellones, /pabellones/:id
+  GET    /coordenadas, /coordenadas/:id
+  GET    /provincias
+  GET    /departamentos
+  GET    /localidades, /localidades/:id
+  POST   /consultas
+
+ CUALQUIER USUARIO CON TOKEN
+  GET    /usuarios/me
+  POST   /usuarios/logout
+
+ SOLO ARTESANO (aprobado)
+  GET    /artesanos/me
+  GET    /productos/me
+  POST   /productos
+  PUT    /productos/:id             (solo los suyos)
+  PATCH  /productos/:id/activo      (solo los suyos)
+  DELETE /productos/:id             (solo los suyos)
+
+ SOLO ADMINISTRADOR
+  GET    /usuarios, /usuarios/:id
+  POST   /usuarios
+  PUT    /usuarios/:id
+  DELETE /usuarios/:id
+  POST   /usuarios/registro-administrador
+  POST   /usuarios/asignar-artesano
+  POST   /usuarios/:id/roles
+  DELETE /usuarios/:id/roles/:rol
+  PATCH  /usuarios/:id/activo
+  GET    /artesanos/solicitudes
+  PATCH  /artesanos/:id/solicitud
+  POST   /artesanos
+  PUT    /artesanos/:id
+  DELETE /artesanos/:id
+  POST/PUT/DELETE  /stands
+  POST/PUT/DELETE  /roles
+  POST/PUT/DELETE  /rubros
+  POST/PUT/DELETE  /pabellones
+  POST/PUT/DELETE  /coordenadas
+  GET    /consultas, /consultas/:id
+  DELETE /consultas/:id

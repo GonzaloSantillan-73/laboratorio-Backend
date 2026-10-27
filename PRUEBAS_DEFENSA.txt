@@ -1,0 +1,443 @@
+==========================================================================
+ PRUEBAS PARA LA DEFENSA - API FERIA DEL PONCHO
+==========================================================================
+
+Son las pruebas más importantes, en orden, contando la historia completa:
+un artesano se postula, el admin lo aprueba, carga sus productos, y la
+API protege cada cosa. Cada prueba dice QUE DEMUESTRA, para explicarla.
+
+Hacerlas de arriba hacia abajo: cada una usa datos de las anteriores.
+
+
+--------------------------------------------------------------------------
+ ANTES DE EMPEZAR (en la terminal)
+--------------------------------------------------------------------------
+
+npx prisma migrate reset
+npx prisma generate
+node --experimental-strip-types scripts/cargar-localidades.js
+node --experimental-strip-types scripts/inicializar-admin.js
+npm run dev
+
+
+--------------------------------------------------------------------------
+ VARIABLES DE POSTMAN (Environment)
+--------------------------------------------------------------------------
+
+  url            http://localhost:3000/api
+  tokenAdmin
+  idAdmin
+  localidadId
+  tokenAna
+  idAna
+  artesanoAna
+  tokenBruno
+  idBruno
+  artesanoBruno
+  productoAna
+  productoBruno
+
+Token: en Authorization > Bearer Token.
+Body:  en Body > raw > JSON.
+
+
+==========================================================================
+ PARTE 1 - AUTENTICACION
+==========================================================================
+
+--- 1. Login del admin ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body (con ADMIN_EMAIL y ADMIN_PASSWORD del .env):
+{
+  "email": "ADMIN_EMAIL_DEL_ENV",
+  "password": "ADMIN_PASSWORD_DEL_ENV"
+}
+Esperado: 200 con "token"
+>> Guardar el token en {{tokenAdmin}}
+QUE DEMUESTRA: el login verifica la contraseña con bcrypt y entrega un JWT.
+
+--- 2. Mis datos ---
+GET {{url}}/usuarios/me
+Token: {{tokenAdmin}}
+Esperado: 200, "activo": true, "roles": ["ADMINISTRADOR"]
+>> Guardar "id" en {{idAdmin}}
+QUE DEMUESTRA: cargarContextoUsuario busca la cuenta y sus roles en la BD
+en cada solicitud.
+
+--- 3. Sin token ---
+GET {{url}}/usuarios/me
+Token: ninguno
+Esperado: 401 "Se requiere un token de acceso"
+QUE DEMUESTRA: autenticarUsuario frena cualquier solicitud sin JWT.
+
+
+==========================================================================
+ PARTE 2 - POSTULACION Y HABILITACION DEL ARTESANO
+==========================================================================
+
+--- 4. Buscar la localidad ---
+GET {{url}}/localidades?nombre=belen&provinciaId=10
+Token: ninguno
+Esperado: 200
+>> Copiar el "id" de BELEN y guardarlo en {{localidadId}}
+QUE DEMUESTRA: las localidades salen de los datos oficiales de georef.
+
+--- 5. Ana se postula ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Ana",
+  "apellido": "Pérez",
+  "email": "ana@poncho.com",
+  "password": "ClaveAna2026",
+  "nombreEmprendimiento": "Telares de Ana",
+  "trayectoria": "15 años tejiendo en telar criollo",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [1, 4]
+}
+Esperado: 201, "estadoSolicitud": "PENDIENTE", sin passwordHash
+>> Guardar "id" en {{idAna}} y "artesano.id" en {{artesanoAna}}
+QUE DEMUESTRA: la postulación crea la cuenta y el artesano PENDIENTE en una
+sola operación, con varios rubros (tabla ArtesanoRubro).
+
+--- 6. Intentar elegir el rol ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Pedro",
+  "apellido": "Sosa",
+  "email": "pedro@poncho.com",
+  "password": "ClavePedro2026",
+  "nombreEmprendimiento": "Cestería Sosa",
+  "trayectoria": "Cestero",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [6],
+  "rol": "ADMINISTRADOR"
+}
+Esperado: 400
+QUE DEMUESTRA: .strict() de Zod rechaza campos extra. El cliente no elige
+su rol.
+
+--- 7. Login de Ana ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "ana@poncho.com",
+  "password": "ClaveAna2026"
+}
+Esperado: 200
+>> Guardar el token en {{tokenAna}}
+
+--- 8. Ana pendiente intenta cargar un producto ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Poncho",
+  "descripcion": "De lana de oveja",
+  "precio": 50000,
+  "stock": 2
+}
+Esperado: 403 "No tiene permiso para esta operación."
+QUE DEMUESTRA: mientras está pendiente no tiene el rol ARTESANO, así que
+autorizarRoles("ARTESANO") la frena. No opera productos.
+
+--- 9. El admin ve las solicitudes pendientes ---
+GET {{url}}/artesanos/solicitudes?estadoSolicitud=PENDIENTE
+Token: {{tokenAdmin}}
+Esperado: 200, aparece Ana
+QUE DEMUESTRA: el listado de solicitudes es solo para el admin.
+
+--- 10. El admin aprueba a Ana ---
+PATCH {{url}}/artesanos/{{artesanoAna}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 200, "estadoSolicitud": "APROBADO"
+QUE DEMUESTRA: en la misma transacción cambia el estado y le da el rol
+ARTESANO.
+
+--- 11. Aprobarla otra vez ---
+PATCH {{url}}/artesanos/{{artesanoAna}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 409 "La solicitud ya fue resuelta."
+QUE DEMUESTRA: una solicitud resuelta no se puede volver a resolver.
+
+--- 12. Ana ya es artesano ---
+GET {{url}}/usuarios/me
+Token: {{tokenAna}}
+Esperado: 200 con "roles": ["ARTESANO"]
+QUE DEMUESTRA: con el MISMO token de antes ya tiene el rol, porque los
+roles se leen de la BD en cada solicitud, no del token.
+
+
+==========================================================================
+ PARTE 3 - PRODUCTOS Y PROPIEDAD DEL RECURSO
+==========================================================================
+
+Primero hace falta un segundo artesano (Bruno) para mostrar la propiedad.
+
+--- 13. Bruno se postula ---
+POST {{url}}/usuarios/postulacion
+Token: ninguno
+Body:
+{
+  "nombre": "Bruno",
+  "apellido": "Gómez",
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026",
+  "nombreEmprendimiento": "Platería Gómez",
+  "trayectoria": "Orfebre desde 2005",
+  "localidadId": "{{localidadId}}",
+  "rubrosIds": [3]
+}
+Esperado: 201
+>> Guardar "id" en {{idBruno}} y "artesano.id" en {{artesanoBruno}}
+
+--- 14. El admin aprueba a Bruno ---
+PATCH {{url}}/artesanos/{{artesanoBruno}}/solicitud
+Token: {{tokenAdmin}}
+Body:
+{
+  "estado": "APROBADO"
+}
+Esperado: 200
+
+--- 15. Login de Bruno ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026"
+}
+Esperado: 200
+>> Guardar el token en {{tokenBruno}}
+
+--- 16. Ana carga un producto ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Poncho catamarqueño",
+  "descripcion": "Poncho de vicuña tejido a mano",
+  "precio": 85000,
+  "stock": 3
+}
+Esperado: 201, a nombre del artesano de Ana
+>> Guardar "id" en {{productoAna}}
+QUE DEMUESTRA: el artesano sale de la cuenta autenticada, no del body.
+
+--- 17. Bruno carga un producto ---
+POST {{url}}/productos
+Token: {{tokenBruno}}
+Body:
+{
+  "nombre": "Mate de plata",
+  "descripcion": "Mate cincelado a mano",
+  "precio": 60000,
+  "stock": 5
+}
+Esperado: 201
+>> Guardar "id" en {{productoBruno}}
+
+--- 18. Ana intenta cargar un producto a nombre de otro ---
+POST {{url}}/productos
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Faja",
+  "descripcion": "Faja tejida",
+  "precio": 10000,
+  "stock": 4,
+  "artesanoId": 2
+}
+Esperado: 400
+QUE DEMUESTRA: no se puede mandar el artesanoId en el body.
+
+--- 19. Mis productos ---
+GET {{url}}/productos/me
+Token: {{tokenAna}}
+Esperado: 200, solo el poncho de Ana
+QUE DEMUESTRA: el mismo endpoint devuelve datos distintos según el token.
+
+--- 20. Ana intenta editar el producto de Bruno ---
+PUT {{url}}/productos/{{productoBruno}}
+Token: {{tokenAna}}
+Body:
+{
+  "nombre": "Mate trucho",
+  "descripcion": "Lo cambió Ana",
+  "precio": 1,
+  "stock": 1
+}
+Esperado: 404 "No existe un producto con ID ..."
+QUE DEMUESTRA: el servicio busca por id Y por dueño en el mismo where.
+Un producto ajeno responde igual que uno que no existe.
+
+--- 21. Ana desactiva su producto ---
+PATCH {{url}}/productos/{{productoAna}}/activo
+Token: {{tokenAna}}
+Body:
+{
+  "activo": false
+}
+Esperado: 200, "activo": false
+
+--- 22. Catálogo público ---
+GET {{url}}/productos
+Token: ninguno
+Esperado: 200, solo el mate de Bruno
+QUE DEMUESTRA: baja lógica. El poncho no se borró, solo no se muestra.
+(Con ?activo=false se ve el poncho.)
+
+
+==========================================================================
+ PARTE 4 - STANDS Y REGLAS DE LA BASE DE DATOS
+==========================================================================
+
+--- 23. El admin le asigna un stand a Ana ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "A",
+  "coordenadaId": 1,
+  "estado": "OCUPADO",
+  "artesanoId": {{artesanoAna}}
+}
+Esperado: 201, con pabellón, coordenada y artesano
+QUE DEMUESTRA: el stand se relaciona con las tablas Pabellon y Coordenada.
+
+--- 24. Otro stand en la misma coordenada ---
+POST {{url}}/stands
+Token: {{tokenAdmin}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "B",
+  "coordenadaId": 1
+}
+Esperado: 409 "La coordenada ya está ocupada por otro stand."
+QUE DEMUESTRA: dos stands no pueden ocupar el mismo lugar del mapa.
+
+--- 25. Ana intenta crear un stand ---
+POST {{url}}/stands
+Token: {{tokenAna}}
+Body:
+{
+  "pabellonId": 1,
+  "sector": "B",
+  "coordenadaId": 2
+}
+Esperado: 403
+QUE DEMUESTRA: los GET de stands son públicos, pero crear es solo admin.
+
+--- 26. Borrar un pabellón que tiene stands ---
+DELETE {{url}}/pabellones/1
+Token: {{tokenAdmin}}
+Esperado: 409
+QUE DEMUESTRA: onDelete: Restrict. El manejador de errores traduce el
+error de Prisma a 409 sin mostrar detalles de la BD.
+
+
+==========================================================================
+ PARTE 5 - GESTION DE CUENTAS
+==========================================================================
+
+--- 27. El admin desactiva a Bruno ---
+PATCH {{url}}/usuarios/{{idBruno}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": false
+}
+Esperado: 200, "activo": false
+
+--- 28. Bruno con su token vigente ---
+GET {{url}}/usuarios/me
+Token: {{tokenBruno}}
+Esperado: 403 "Cuenta inactiva."
+QUE DEMUESTRA: el token sigue siendo válido, pero la cuenta se revisa en
+cada solicitud y está inactiva.
+
+--- 29. Bruno intenta entrar ---
+POST {{url}}/usuarios/login
+Token: ninguno
+Body:
+{
+  "email": "bruno@poncho.com",
+  "password": "ClaveBruno2026"
+}
+Esperado: 401 "Las credenciales son inválidas."
+QUE DEMUESTRA: el login rechaza cuentas inactivas con el mensaje genérico.
+
+--- 30. Reactivar a Bruno ---
+PATCH {{url}}/usuarios/{{idBruno}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": true
+}
+Esperado: 200 (Bruno vuelve a operar)
+
+--- 31. Desactivar al único administrador ---
+PATCH {{url}}/usuarios/{{idAdmin}}/activo
+Token: {{tokenAdmin}}
+Body:
+{
+  "activo": false
+}
+Esperado: 409 "Debe quedar un administrador activo."
+QUE DEMUESTRA: la feria nunca puede quedar sin administrador.
+
+--- 32. Quitarle a Ana su único rol ---
+DELETE {{url}}/usuarios/{{idAna}}/roles/ARTESANO
+Token: {{tokenAdmin}}
+Esperado: 409 "Debe conservar un rol."
+QUE DEMUESTRA: un usuario nunca queda sin roles.
+
+--- 33. Ana intenta ver la lista de usuarios ---
+GET {{url}}/usuarios
+Token: {{tokenAna}}
+Esperado: 403
+QUE DEMUESTRA: tiene token válido (pasa el 401) pero no tiene el rol (403).
+
+
+==========================================================================
+ PARTE 6 - CIERRE DE SESION
+==========================================================================
+
+--- 34. Logout de Ana ---
+POST {{url}}/usuarios/logout
+Token: {{tokenAna}}
+Esperado: 204
+
+--- 35. Usar el mismo token ---
+GET {{url}}/usuarios/me
+Token: {{tokenAna}}
+Esperado: 401 "Token inválido, vencido o revocado"
+QUE DEMUESTRA: el token queda revocado (tabla TokenRevocado) aunque
+todavía no haya vencido.
+
+
+==========================================================================
+ CODIGOS PARA EXPLICAR
+==========================================================================
+
+  400  Los datos están mal (Zod)
+  401  No sé quién sos (sin token, inválido, vencido o revocado)
+  403  Sé quién sos pero no tenés permiso, o tu cuenta está inactiva
+  404  No existe, o no es tuyo
+  409  Dato repetido o se rompe una regla del negocio
