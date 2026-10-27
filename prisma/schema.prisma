@@ -49,7 +49,8 @@ model Artesano {
     usuario              Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
     nombreEmprendimiento String
     trayectoria          String
-    localidad            String
+    localidadId          String
+    localidad            Localidad @relation(fields: [localidadId], references: [id], onDelete: Restrict)
     estadoSolicitud      String   @default("PENDIENTE")
     createdAt            DateTime @default(now())
     updatedAt            DateTime @updatedAt
@@ -63,6 +64,31 @@ model Rubro {
     id        Int             @id @default(autoincrement())
     nombre    String          @unique
     artesanos ArtesanoRubro[]
+}
+
+model Provincia {
+    id            String         @id
+    nombre        String
+    departamentos Departamento[]
+    localidades   Localidad[]
+}
+
+model Departamento {
+    id          String      @id
+    nombre      String
+    provinciaId String
+    provincia   Provincia   @relation(fields: [provinciaId], references: [id], onDelete: Restrict)
+    localidades Localidad[]
+}
+
+model Localidad {
+    id             String       @id
+    nombre         String
+    departamentoId String
+    departamento   Departamento @relation(fields: [departamentoId], references: [id], onDelete: Restrict)
+    provinciaId    String
+    provincia      Provincia    @relation(fields: [provinciaId], references: [id], onDelete: Restrict)
+    artesanos      Artesano[]
 }
 
 model ArtesanoRubro {
