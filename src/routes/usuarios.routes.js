@@ -4,7 +4,6 @@ from '../controllers/usuarios.controllers.js'
 import { agregarRol, quitarRol } from '../controllers/roles.controllers.js'
 import { actualizarActivo } from '../controllers/estado.controllers.js'
 import { validarUsuario, validarInicioSesion } from '../middlewares/validarUsuario.js'
-import { validarId as validarID } from '../middlewares/validarId.middleware.js'
 import { validarConsultarUsuario } from '../middlewares/validarconsultas.js'
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cerrarSesion } from "../controllers/sesiones.controllers.js"
@@ -16,10 +15,17 @@ import { actualizarActivoSchema } from "../validators/estado.schemas.js"
 
 const router = express.Router()
 
-router.get('/', validarConsultarUsuario, obtenerUsuarios)
+const controlesAdministrador = [
+    autenticarUsuario, cargarContextoUsuario,
+    autorizarRoles("ADMINISTRADOR")
+];
+
+router.get('/', ...controlesAdministrador, validarConsultarUsuario, obtenerUsuarios)
 router.get('/me', autenticarUsuario, cargarContextoUsuario, obtenerMiUsuario)
-router.get('/:id', validarID, obtenerUsuarioPorId)
-router.post('/', validarUsuario, crearUsuario)
+router.get('/:id', ...controlesAdministrador,
+    validarParametros(usuarioIdParametrosSchema, "ID inválido."),
+    obtenerUsuarioPorId)
+router.post('/', ...controlesAdministrador, validarUsuario, crearUsuario)
 // Postulación pública: no requiere JWT
 router.post("/postulacion",
     validarBody(postulacionSchema),
@@ -73,7 +79,11 @@ router.patch("/:id/activo",
     actualizarActivo
 );
 
-router.put('/:id', validarID, validarUsuario, actualizarUsuario)
-router.delete('/:id', validarID, eliminarUsuario)
+router.put('/:id', ...controlesAdministrador,
+    validarParametros(usuarioIdParametrosSchema, "ID inválido."),
+    validarUsuario, actualizarUsuario)
+router.delete('/:id', ...controlesAdministrador,
+    validarParametros(usuarioIdParametrosSchema, "ID inválido."),
+    eliminarUsuario)
 
 export default router
