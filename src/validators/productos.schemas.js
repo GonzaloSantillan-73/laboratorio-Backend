@@ -13,6 +13,7 @@ export const consultarProductoSchema = z.object({
     descripcion: z.string().trim().max(300).optional(),
     precio: z.coerce.number().positive().optional(),
     stock: z.coerce.number().int().positive().optional(),
+    activo: z.enum(['true', 'false']).default('true'),
     ordenPor: z.enum(['nombre', 'descripcion', 'precio', 'stock']).default('nombre'),
     direccion: z.enum(['asc', 'desc']).default('asc'),
     pagina: z.coerce.number().int().positive().default(1),

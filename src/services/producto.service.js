@@ -15,7 +15,7 @@ const verificarArtesano = async (artesanoId) => {
 }
 
 export const consultarProducto = async (criterios) => {
-    const { nombre, descripcion, precio, stock, ordenPor, direccion, pagina, limite } = criterios
+    const { nombre, descripcion, precio, stock, activo, ordenPor, direccion, pagina, limite } = criterios
     const where = {}
     if (nombre !== undefined) {
         where.nombre = { contains: nombre, mode: 'insensitive' }
@@ -29,6 +29,8 @@ export const consultarProducto = async (criterios) => {
     if (stock !== undefined) {
         where.stock = { equals: stock }
     }
+    // llega como texto desde la url, por eso se compara con 'true'
+    where.activo = activo === 'true'
     const desplazamiento = (pagina - 1) * limite
     const [productos, total] = await prisma.$transaction([
         prisma.producto.findMany({
@@ -77,4 +79,19 @@ export const eliminarProducto = async (id) => {
         return null
     }
     return prisma.producto.delete({ where: { id } })
+}
+
+export const cambiarActivoProducto = async (id, usuarioId, activo) => {
+    // busca el producto solo entre los del artesano que hace la solicitud
+    const producto = await prisma.producto.findFirst({
+        where: { id, artesano: { usuarioId } }
+    })
+    if (!producto) {
+        return null
+    }
+    return prisma.producto.update({
+        where: { id },
+        data: { activo },
+        select: { id: true, nombre: true, activo: true }
+    })
 }
