@@ -54,3 +54,18 @@ export const eliminarProducto = async (req, res, next) => {
         next(error)
     }
 }
+
+export const actualizarActivoProducto = async (req, res, next) => {
+    try {
+        const producto = await productoServices.cambiarActivoProducto(
+            req.params.id,
+            req.contextoUsuario.id,
+            req.bodyValidado.activo)
+        if (!producto) {
+            return next(crearError(`No existe un producto con ID ${req.params.id}`, 404))
+        }
+        res.json(producto)
+    } catch (error) {
+        next(error)
+    }
+}
