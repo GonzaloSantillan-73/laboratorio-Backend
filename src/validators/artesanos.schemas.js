@@ -13,9 +13,12 @@ export const actualizarArtesanoSchema = crearArtesanoSchema.partial()
 export const consultarArtesanosSchema = z.object({
     localidad: z.string().trim().min(1).optional(),
     rubro: z.string().trim().min(1).optional(),
-    estadoSolicitud: z.enum(["PENDIENTE", "APROBADO", "RECHAZADO"]).optional(),
+    estadoSolicitud: z.enum(["PENDIENTE", "APROBADO", "RECHAZADO", "MODIFICACIONES"]).optional(),
     ordenarPor: z.enum(["nombreEmprendimiento", "createdAt", "localidadId"]).default("createdAt"),
     direccion: z.enum(["asc", "desc"]).default("asc"),
     pagina: z.coerce.number().int().positive().default(1),
     limite: z.coerce.number().int().min(1).max(50).default(10),
 });
+export const resolverSolicitudSchema = z
+    .object({ estado: z.enum(["APROBADO", "RECHAZADO", "MODIFICACIONES"]) })
+    .strict();

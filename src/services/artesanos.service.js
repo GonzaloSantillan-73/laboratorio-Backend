@@ -208,3 +208,32 @@ export const asignarArtesano = async (dto) => {
         return actualizado.artesano;
     });
 };
+
+export const resolverSolicitudService = async (id, estado) => {
+    return prisma.$transaction(async tx => {
+        const artesano = await tx.artesano.findUniqueOrThrow({
+            where: { id }
+        });
+        if (artesano.estadoSolicitud === "APROBADO" || artesano.estadoSolicitud === "RECHAZADO") {
+            const error = new Error("La solicitud ya fue resuelta.");
+            error.status = 409; throw error;
+        }
+        const actualizado = await tx.artesano.update({
+            where: { id },
+            data: { estadoSolicitud: estado },
+            select: { id: true, nombreEmprendimiento: true, estadoSolicitud: true }
+        });
+        // solo al aprobar se le da el rol ARTESANO
+        if (estado === "APROBADO") {
+            const rol = await tx.rol.findUniqueOrThrow({
+                where: { nombre: "ARTESANO" }
+            });
+            const clave = { usuarioId: artesano.usuarioId, rolId: rol.id };
+            await tx.usuarioRol.upsert({
+                where: { usuarioId_rolId: clave },
+                update: {}, create: clave
+            });
+        }
+        return actualizado;
+    });
+};
