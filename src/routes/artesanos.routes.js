@@ -6,7 +6,8 @@ import {
     actualizarArtesanoId,
     eliminarArtesanoId,
     consultarMiArtesano,
-    resolverSolicitud
+    resolverSolicitud,
+    obtenerSolicitudes
 } from '../controllers/artesanos.controllers.js'
 import {
     validarCreacionArtesano,
@@ -21,14 +22,20 @@ import { resolverSolicitudSchema } from "../validators/artesanos.schemas.js";
 
 const router = Router()
 
+const controlesAdministrador = [
+    autenticarUsuario, cargarContextoUsuario,
+    autorizarRoles("ADMINISTRADOR")
+];
+
 router.get('/', validarConsultaArtesanos, obtenerArtesanos);
 router.get("/me", autenticarUsuario,
     cargarContextoUsuario,
     autorizarRoles("ARTESANO"),
     consultarMiArtesano);
+router.get('/solicitudes', ...controlesAdministrador, validarConsultaArtesanos, obtenerSolicitudes);
 router.get('/:id', validarId, obtenerArtesanosPorId)
-router.post('/', validarCreacionArtesano, crearArtesano)
-router.put('/:id', validarId, validarActualizacionArtesano, actualizarArtesanoId)
+router.post('/', ...controlesAdministrador, validarCreacionArtesano, crearArtesano)
+router.put('/:id', ...controlesAdministrador, validarId, validarActualizacionArtesano, actualizarArtesanoId)
 router.patch('/:id/solicitud',
     autenticarUsuario,
     cargarContextoUsuario,
@@ -37,6 +44,6 @@ router.patch('/:id/solicitud',
     validarBody(resolverSolicitudSchema, "Estado de solicitud inválido."),
     resolverSolicitud
 );
-router.delete('/:id', validarId, eliminarArtesanoId)
+router.delete('/:id', ...controlesAdministrador, validarId, eliminarArtesanoId)
 
 export default router

@@ -11,7 +11,8 @@ import {
 
 export const obtenerArtesanos = async (req, res, next) => {
     try {
-        const criteriosConsulta = req.consultaArtesanos;
+        // el listado publico solo muestra los artesanos aprobados
+        const criteriosConsulta = { ...req.consultaArtesanos, estadoSolicitud: "APROBADO" };
         const resultado = await consultarArtesanosService(criteriosConsulta);
 
         return res.status(200).json(resultado);
@@ -74,4 +75,13 @@ export const consultarMiArtesano = async (req, res) => {
 export const resolverSolicitud = async (req, res) => {
     const artesano = await resolverSolicitudService(req.params.id, req.bodyValidado.estado);
     return res.json(artesano);
+};
+
+export const obtenerSolicitudes = async (req, res, next) => {
+    try {
+        const resultado = await consultarArtesanosService(req.consultaArtesanos);
+        return res.status(200).json(resultado);
+    } catch (error) {
+        return next(error);
+    }
 };

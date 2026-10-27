@@ -27,7 +27,7 @@ const verificarLocalidad = async (localidadId) => {
 export const obtenerArtesanosService = async () => {
     return await prisma.artesano.findMany({
         include: {
-            usuario: true,
+            usuario: { select: { id: true, nombre: true, apellido: true, email: true } },
             productos: true,
             stand: true,
             rubros: { include: { rubro: true } },
@@ -37,10 +37,11 @@ export const obtenerArtesanosService = async () => {
 };
 
 export const obtenerArtesanoPorIdService = async (id) => {
-    const artesano = await prisma.artesano.findUnique({
-        where: { id: Number(id) },
+    // el detalle publico solo muestra artesanos aprobados
+    const artesano = await prisma.artesano.findFirst({
+        where: { id: Number(id), estadoSolicitud: "APROBADO" },
         include: {
-            usuario: true,
+            usuario: { select: { id: true, nombre: true, apellido: true, email: true } },
             productos: true,
             stand: true,
             rubros: { include: { rubro: true } },
@@ -80,7 +81,7 @@ export const crearArtesanoService = async (crearArtesanoDto) => {
                 create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } }))
             }
         },
-        include: { usuario: true, rubros: { include: { rubro: true } } },
+        include: { usuario: { select: { id: true, nombre: true, apellido: true, email: true } }, rubros: { include: { rubro: true } } },
     });
 };
 
@@ -151,7 +152,7 @@ export const consultarArtesanosService = async (criteriosConsulta) => {
             orderBy: [{ [ordenarPor]: direccion }, { id: "asc" }],
             skip: desplazamiento,
             take: limite,
-            include: { usuario: true, rubros: { include: { rubro: true } } }
+            include: { usuario: { select: { id: true, nombre: true, apellido: true, email: true } }, rubros: { include: { rubro: true } } }
         }),
         prisma.artesano.count({ where })
     ]);
