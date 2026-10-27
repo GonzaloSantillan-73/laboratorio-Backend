@@ -1,6 +1,7 @@
 import { consultarProductoSchema } from '../validators/productos.schemas.js';
 import { consultarUsuarioSchema } from '../validators/usuarios.schemas.js';
 import { consultarRolSchema } from '../validators/roles.schemas.js';
+import { consultarRubroSchema } from '../validators/rubros.schemas.js';
 import { detallarErroresZod, crearError } from '../utils/errores.js';
 
 export const validarConsultarProducto = (req, res, next) => {
@@ -30,5 +31,15 @@ export const validarConsultarRol = (req, res, next) => {
         return next(crearError('Parámetros de consulta de roles inválidos.', 400, detalle));
     }
     req.consultaRoles = resultado.data;
+    return next();
+};
+
+export const validarConsultarRubro = (req, res, next) => {
+    const resultado = consultarRubroSchema.safeParse(req.query);
+    if (!resultado.success) {
+        const detalle = detallarErroresZod(resultado.error);
+        return next(crearError('Parámetros de consulta de rubros inválidos.', 400, detalle));
+    }
+    req.consultaRubros = resultado.data;
     return next();
 };
