@@ -3,8 +3,7 @@ import { z } from "zod";
 export const crearStandSchema = z.object({
     pabellonId: z.number().int().positive("El ID del pabellón debe ser un número entero positivo"),
     sector: z.string().trim().min(1, "El sector es obligatorio"),
-    coordenadaX: z.number().int("La coordenada X debe ser un número entero"),
-    coordenadaY: z.number().int("La coordenada Y debe ser un número entero"),
+    coordenadaId: z.number().int().positive("El ID de la coordenada debe ser un número entero positivo"),
     estado: z.enum(["DISPONIBLE", "OCUPADO"]).default("DISPONIBLE"),
     artesanoId: z.number().int().positive("El ID del artesano debe ser un número entero positivo").optional(),
 });

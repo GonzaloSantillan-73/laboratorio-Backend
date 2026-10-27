@@ -11,16 +11,33 @@ const verificarPabellon = async (pabellonId) => {
     }
 }
 
+const verificarCoordenada = async (coordenadaId, standId) => {
+    const coordenada = await prisma.coordenada.findUnique({
+        where: { id: coordenadaId },
+        include: { stand: true }
+    })
+    if (!coordenada) {
+        const error = new Error(`No existe una coordenada con ID ${coordenadaId}`);
+        error.status = 404;
+        throw error;
+    }
+    if (coordenada.stand && coordenada.stand.id !== standId) {
+        const error = new Error("La coordenada ya está ocupada por otro stand.");
+        error.status = 409;
+        throw error;
+    }
+}
+
 export const obtenerStandsService = async () => {
     return await prisma.stand.findMany({
-        include: { artesano: true, pabellon: true },
+        include: { artesano: true, pabellon: true, coordenada: true },
     });
 };
 
 export const obtenerStandPorIdService = async (id) => {
     const stand = await prisma.stand.findUnique({
         where: { id: Number(id) },
-        include: { artesano: true, pabellon: true },
+        include: { artesano: true, pabellon: true, coordenada: true },
     });
 
     if (!stand) {
@@ -34,6 +51,7 @@ export const obtenerStandPorIdService = async (id) => {
 
 export const crearStandService = async (crearStandDto) => {
     await verificarPabellon(crearStandDto.pabellonId)
+    await verificarCoordenada(crearStandDto.coordenadaId)
     // Si se envía un artesanoId, verificamos que exista y no tenga ya un stand asignado
     if (crearStandDto.artesanoId) {
         const artesano = await prisma.artesano.findUnique({
@@ -56,7 +74,7 @@ export const crearStandService = async (crearStandDto) => {
 
     return await prisma.stand.create({
         data: crearStandDto,
-        include: { artesano: true, pabellon: true },
+        include: { artesano: true, pabellon: true, coordenada: true },
     });
 };
 
@@ -64,11 +82,14 @@ export const actualizarStandService = async (id, actualizarStandDto) => {
     if (actualizarStandDto.pabellonId) {
         await verificarPabellon(actualizarStandDto.pabellonId)
     }
+    if (actualizarStandDto.coordenadaId) {
+        await verificarCoordenada(actualizarStandDto.coordenadaId, Number(id))
+    }
     try {
         return await prisma.stand.update({
             where: { id: Number(id) },
             data: actualizarStandDto,
-            include: { artesano: true, pabellon: true },
+            include: { artesano: true, pabellon: true, coordenada: true },
         });
     } catch (error) {
         if (error.code === "P2025") {
@@ -117,7 +138,7 @@ export const consultarStandsService = async (criteriosConsulta) => {
             orderBy: [{ [ordenarPor]: direccion }, { id: "asc" }],
             skip: desplazamiento,
             take: limite,
-            include: { artesano: true, pabellon: true }
+            include: { artesano: true, pabellon: true, coordenada: true }
         }),
         prisma.stand.count({ where })
     ]);
