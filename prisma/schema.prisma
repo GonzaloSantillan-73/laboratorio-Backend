@@ -74,9 +74,16 @@ model ArtesanoRubro {
     @@id([artesanoId, rubroId])
 }
 
+model Pabellon {
+    id     Int     @id @default(autoincrement())
+    nombre String  @unique
+    stands Stand[]
+}
+
 model Stand {
     id          Int    @id @default(autoincrement())
-    pabellon    String
+    pabellonId  Int
+    pabellon    Pabellon @relation(fields: [pabellonId], references: [id], onDelete: Restrict)
     sector      String
     coordenadaX Int
     coordenadaY Int
