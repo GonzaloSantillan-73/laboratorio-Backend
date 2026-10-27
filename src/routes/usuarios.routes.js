@@ -1,16 +1,16 @@
 import express from 'express'
-import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, actualizarUsuario, eliminarUsuario, registrarUsuario, iniciarSesion, crearAdministrador, asociarArtesano}
+import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, actualizarUsuario, eliminarUsuario, registrarPostulacion, iniciarSesion, crearAdministrador, asociarArtesano}
 from '../controllers/usuarios.controllers.js'
 import { agregarRol, quitarRol } from '../controllers/roles.controllers.js'
 import { actualizarActivo } from '../controllers/estado.controllers.js'
-import { validarUsuario, validarRegistroUsuario, validarInicioSesion } from '../middlewares/validarUsuario.js'
+import { validarUsuario, validarInicioSesion } from '../middlewares/validarUsuario.js'
 import { validarId as validarID } from '../middlewares/validarId.middleware.js'
 import { validarConsultarUsuario } from '../middlewares/validarconsultas.js'
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cerrarSesion } from "../controllers/sesiones.controllers.js"
 import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js"
 import { validarBody, validarParametros } from "../middlewares/validacion.middleware.js"
-import { registroAdminSchema, usuarioIdParametrosSchema, asignarArtesanoSchema } from "../validators/usuarios.schemas.js"
+import { registroAdminSchema, usuarioIdParametrosSchema, asignarArtesanoSchema, postulacionSchema } from "../validators/usuarios.schemas.js"
 import { asignarAdministradorSchema, retirarRolParametrosSchema } from "../validators/roles.schemas.js"
 import { actualizarActivoSchema } from "../validators/estado.schemas.js"
 
@@ -20,9 +20,10 @@ router.get('/', validarConsultarUsuario, obtenerUsuarios)
 router.get('/me', autenticarUsuario, cargarContextoUsuario, obtenerMiUsuario)
 router.get('/:id', validarID, obtenerUsuarioPorId)
 router.post('/', validarUsuario, crearUsuario)
-router.post("/registro",
-            validarRegistroUsuario,
-            registrarUsuario
+// Postulación pública: no requiere JWT
+router.post("/postulacion",
+    validarBody(postulacionSchema),
+    registrarPostulacion
 );
 router.post(
     "/login",

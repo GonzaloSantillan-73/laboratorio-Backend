@@ -149,18 +149,25 @@ export const eliminarUsuario = async (id) => {
     return prisma.usuario.delete({ where: { id } })
 }
 
-export const registrarUsuario = async (registrarUsuarioDto) => {
-    const { nombre, apellido, email, password } = registrarUsuarioDto;
+export const registrarPostulacion = async (dto) => {
+    const { nombre, apellido, email, password, nombreEmprendimiento, trayectoria, localidadId, rubrosIds } = dto;
     const passwordHash = await bcrypt.hash(password, FACTOR_COSTO);
 
+    // se crea la cuenta y el artesano juntos, pero sin el rol ARTESANO
+    // el rol se lo da el admin cuando aprueba la solicitud
     return prisma.usuario.create({
         data: {
             nombre, apellido, email, passwordHash, activo: true,
-            roles: { create: { rol: { connect: { nombre: "ARTESANO" } } } }
+            artesano: { create: {
+                nombreEmprendimiento, trayectoria,
+                estadoSolicitud: "PENDIENTE",
+                localidad: { connect: { id: localidadId } },
+                rubros: { create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } })) }
+            } }
         },
         select: {
-            id: true, nombre: true, apellido: true, email: true,
-            activo: true
+            id: true, nombre: true, apellido: true, email: true, activo: true,
+            artesano: { select: { id: true, estadoSolicitud: true } }
         }
     });
 };

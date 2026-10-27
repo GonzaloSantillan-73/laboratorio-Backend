@@ -58,3 +58,11 @@ export const usuarioIdParametrosSchema = z.object({
 
 export const asignarArtesanoSchema =
     crearArtesanoSchema.extend({ usuarioId: z.uuid() }).strict();
+
+export const postulacionSchema =
+    registrarUsuarioSchema.extend({
+        nombreEmprendimiento: crearArtesanoSchema.shape.nombreEmprendimiento,
+        trayectoria: crearArtesanoSchema.shape.trayectoria,
+        localidadId: crearArtesanoSchema.shape.localidadId,
+        rubrosIds: crearArtesanoSchema.shape.rubrosIds
+    }).strict()

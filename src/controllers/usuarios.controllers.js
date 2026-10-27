@@ -62,13 +62,9 @@ export const eliminarUsuario = async (req, res, next) => {
     }
 }
 
-export const registrarUsuario = async (req, res, next) => {
-    try {
-        const usuario = await usuarioServices.registrarUsuario(req.registrarUsuarioDto);
-        return res.status(201).json(usuario);
-    } catch (error) {
-        return next(error);
-    }
+export const registrarPostulacion = async (req, res) => {
+    const usuario = await usuarioServices.registrarPostulacion(req.bodyValidado);
+    return res.status(201).json(usuario);
 };
 
 
