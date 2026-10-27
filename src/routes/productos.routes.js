@@ -11,10 +11,15 @@ import { actualizarActivoSchema } from "../validators/estado.schemas.js"
 
 const router = express.Router()
 
+const controlesArtesano = [
+    autenticarUsuario, cargarContextoUsuario,
+    autorizarRoles("ARTESANO")
+];
+
 router.get('/', validarConsultarProducto, obtenerProductos)
 router.get('/:id', validarID, obtenerProductoPorId)
-router.post('/', validarProducto, crearProducto)
-router.put('/:id', validarID, validarProducto, actualizarProducto)
+router.post('/', ...controlesArtesano, validarProducto, crearProducto)
+router.put('/:id', ...controlesArtesano, validarID, validarProducto, actualizarProducto)
 router.patch('/:id/activo',
     autenticarUsuario,
     cargarContextoUsuario,
@@ -23,6 +28,6 @@ router.patch('/:id/activo',
     validarBody(actualizarActivoSchema, "Campo activo inválido."),
     actualizarActivoProducto
 )
-router.delete('/:id', validarID, eliminarProducto)
+router.delete('/:id', ...controlesArtesano, validarID, eliminarProducto)
 
 export default router
