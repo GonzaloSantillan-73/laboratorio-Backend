@@ -10,12 +10,19 @@ import {
     validarConsultaConsultas
 } from '../middlewares/consulta.middleware.js';
 import { validarId } from "../middlewares/validarId.middleware.js";
+import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js";
+import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js";
 
 const router = Router();
 
-router.get('/', validarConsultaConsultas, obtenerConsultas);
-router.get('/:id', validarId, obtenerConsultaPorId);
+const controlesAdministrador = [
+    autenticarUsuario, cargarContextoUsuario,
+    autorizarRoles("ADMINISTRADOR")
+];
+
+router.get('/', ...controlesAdministrador, validarConsultaConsultas, obtenerConsultas);
+router.get('/:id', ...controlesAdministrador, validarId, obtenerConsultaPorId);
 router.post('/', validarCreacionConsulta, crearConsulta);
-router.delete('/:id', validarId, eliminarConsultaId);
+router.delete('/:id', ...controlesAdministrador, validarId, eliminarConsultaId);
 
 export default router;
