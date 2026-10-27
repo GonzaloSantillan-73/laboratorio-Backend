@@ -50,13 +50,28 @@ model Artesano {
     nombreEmprendimiento String
     trayectoria          String
     localidad            String
-    rubro                String
     estadoSolicitud      String   @default("PENDIENTE")
     createdAt            DateTime @default(now())
     updatedAt            DateTime @updatedAt
 
+    rubros    ArtesanoRubro[]
     productos Producto[]
     stand     Stand?
+}
+
+model Rubro {
+    id        Int             @id @default(autoincrement())
+    nombre    String          @unique
+    artesanos ArtesanoRubro[]
+}
+
+model ArtesanoRubro {
+    artesanoId Int
+    rubroId    Int
+    artesano   Artesano @relation(fields: [artesanoId], references: [id], onDelete: Cascade)
+    rubro      Rubro    @relation(fields: [rubroId], references: [id], onDelete: Restrict)
+
+    @@id([artesanoId, rubroId])
 }
 
 model Stand {
