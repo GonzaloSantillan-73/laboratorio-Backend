@@ -9,6 +9,7 @@ import rolesRoutes from './src/routes/roles.routes.js'
 import rubrosRoutes from './src/routes/rubros.routes.js'
 import pabellonesRoutes from './src/routes/pabellones.routes.js'
 import coordenadasRoutes from './src/routes/coordenadas.routes.js'
+import { provinciasRouter, departamentosRouter, localidadesRouter } from './src/routes/localidades.routes.js'
 import "./src/config/jwt.js"
 import { iniciarLimpiezaRevocaciones } from './src/tareas/limpiezaRevocaciones.js'
 
@@ -31,6 +32,9 @@ app.use('/api/roles', rolesRoutes)
 app.use('/api/rubros', rubrosRoutes)
 app.use('/api/pabellones', pabellonesRoutes)
 app.use('/api/coordenadas', coordenadasRoutes)
+app.use('/api/provincias', provinciasRouter)
+app.use('/api/departamentos', departamentosRouter)
+app.use('/api/localidades', localidadesRouter)
 
 app.use((req, res, next) => {
     const error = new Error(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);
