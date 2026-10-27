@@ -3,6 +3,7 @@ import { consultarUsuarioSchema } from '../validators/usuarios.schemas.js';
 import { consultarRolSchema } from '../validators/roles.schemas.js';
 import { consultarRubroSchema } from '../validators/rubros.schemas.js';
 import { consultarPabellonSchema } from '../validators/pabellones.schemas.js';
+import { consultarCoordenadaSchema } from '../validators/coordenadas.schemas.js';
 import { detallarErroresZod, crearError } from '../utils/errores.js';
 
 export const validarConsultarProducto = (req, res, next) => {
@@ -52,5 +53,15 @@ export const validarConsultarPabellon = (req, res, next) => {
         return next(crearError('Parámetros de consulta de pabellones inválidos.', 400, detalle));
     }
     req.consultaPabellones = resultado.data;
+    return next();
+};
+
+export const validarConsultarCoordenada = (req, res, next) => {
+    const resultado = consultarCoordenadaSchema.safeParse(req.query);
+    if (!resultado.success) {
+        const detalle = detallarErroresZod(resultado.error);
+        return next(crearError('Parámetros de consulta de coordenadas inválidos.', 400, detalle));
+    }
+    req.consultaCoordenadas = resultado.data;
     return next();
 };
