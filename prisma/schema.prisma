@@ -137,6 +137,7 @@ model Producto {
     descripcion String
     precio      Float
     stock       Int
+    activo      Boolean  @default(true)
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
 
