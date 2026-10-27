@@ -16,6 +16,7 @@ export const cargarContextoUsuario = async (req, res, next) => {
 export const autorizarRoles = (...rolesPermitidos) => {
     return (req, res, next) => {
         const usuario = req.contextoUsuario;
+        // Verifica si el usuario tiene al menos uno de los roles permitidos
         const permitido = (usuario?.roles ?? []).some(rol => rolesPermitidos.includes(rol));
 
         if (!permitido) {

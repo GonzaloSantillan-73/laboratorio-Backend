@@ -1,8 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import prisma from "../src/config/prisma.js";
-import { registrarUsuarioSchema }
-    from "../src/validators/usuarios.schemas.js";
+import { registrarUsuarioSchema } from "../src/validators/usuarios.schemas.js";
 
 try {
     const dto = registrarUsuarioSchema.strict().parse({

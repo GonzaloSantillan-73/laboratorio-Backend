@@ -2,9 +2,7 @@ import { crearError, detallarErroresZod } from '../utils/errores.js'
 import { usuarioSchema, registrarUsuarioSchema, iniciarSesionSchema } from '../validators/usuarios.schemas.js'
 
 export const validarRegistroUsuario = (req, res, next) => {
-    const resultado = registrarUsuarioSchema.safeParse(
-        req.body
-    );
+    const resultado = registrarUsuarioSchema.safeParse(req.body);
     if (!resultado.success) {
         return res.status(400).json({
             mensaje: "Los datos enviados son inválidos.",
@@ -29,12 +27,12 @@ export const validarInicioSesion = (req, res, next) => {
 
 
 export const validarUsuario = (req, res, next) => {
-    const resultado=usuarioSchema.safeParse(req.body)
-    if(!resultado.success){
-        const detalle=detallarErroresZod(resultado.error)
-        return next(crearError('Datos de usuario invalidos',400,detalle))
+    const resultado = usuarioSchema.safeParse(req.body)
+    if (!resultado.success) {
+        const detalle = detallarErroresZod(resultado.error)
+        return next(crearError('Datos de usuario invalidos', 400, detalle))
     }
-    req.body=resultado.data
+    req.body = resultado.data
     next()
 }
 

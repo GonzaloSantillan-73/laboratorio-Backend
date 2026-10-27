@@ -13,7 +13,7 @@ export const consultarRoles = async (criterios) => {
     const [roles, total] = await prisma.$transaction([
         prisma.rol.findMany({
             where,
-            orderBy: [{ [ordenPor]: direccion },{id:'asc'}],
+            orderBy: [{ [ordenPor]: direccion }, { id: 'asc' }],
             skip: desplazamiento,
             take: limite,
         }),
@@ -30,9 +30,9 @@ export const consultarRolPorId = async (id) => {
 export const crearRol = async (datos) => {
     const { nombre } = datos
     return prisma.rol.create({
-        data: {nombre}
+        data: { nombre }
     })
-    }
+}
 
 export const actualizarRol = async (id, datos) => {
     const existe = await prisma.rol.findUnique({ where: { id } })
@@ -87,17 +87,17 @@ export const retirarRol = async (usuarioId, nombre) => {
         }
         if (nombre === "ADMINISTRADOR" && u.activo) {
             const otros = await tx.usuario.count({
-                where: { id: { not: usuarioId }, activo: true,
-                    roles: { some: { rol: { nombre } } } }
+                where: { id: { not: usuarioId }, activo: true, roles: { some: { rol: { nombre } } } }
             });
             if (!otros) {
-                const error = new Error(
-                    "Debe quedar un administrador activo.");
+                const error = new Error("Debe quedar un administrador activo.");
                 error.status = 409; throw error;
             }
         }
-        await tx.usuarioRol.delete({ where: {
-            usuarioId_rolId: { usuarioId, rolId: asignacion.rolId }
-        } });
+        await tx.usuarioRol.delete({
+            where: {
+                usuarioId_rolId: { usuarioId, rolId: asignacion.rolId }
+            }
+        });
     });
 };
