@@ -24,7 +24,7 @@ export const obtenerProductoPorId = async (req, res, next) => {
 
 export const crearProducto = async (req, res, next) => {
     try {
-        const nuevoProducto = await productoServices.crearProducto(req.body)
+        const nuevoProducto = await productoServices.crearProducto(req.body, req.contextoUsuario.id)
         res.status(201).json(nuevoProducto)
     } catch (error) {
         next(error)
@@ -33,7 +33,7 @@ export const crearProducto = async (req, res, next) => {
 
 export const actualizarProducto = async (req, res, next) => {
     try {
-        const producto = await productoServices.actualizarProducto(req.params.id, req.body)
+        const producto = await productoServices.actualizarProducto(req.params.id, req.contextoUsuario.id, req.body)
         if (!producto) {
             return next(crearError(`No existe un producto con ID ${req.params.id}`, 404))
         }
@@ -45,7 +45,7 @@ export const actualizarProducto = async (req, res, next) => {
 
 export const eliminarProducto = async (req, res, next) => {
     try {
-        const eliminado = await productoServices.eliminarProducto(req.params.id)
+        const eliminado = await productoServices.eliminarProducto(req.params.id, req.contextoUsuario.id)
         if (!eliminado) {
             return next(crearError(`No existe el producto con ID ${req.params.id}`, 404))
         }
@@ -65,6 +65,15 @@ export const actualizarActivoProducto = async (req, res, next) => {
             return next(crearError(`No existe un producto con ID ${req.params.id}`, 404))
         }
         res.json(producto)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const listarMisProductos = async (req, res, next) => {
+    try {
+        const productos = await productoServices.listarMisProductos(req.contextoUsuario.id)
+        res.json(productos)
     } catch (error) {
         next(error)
     }

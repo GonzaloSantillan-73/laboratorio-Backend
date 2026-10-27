@@ -1,5 +1,5 @@
 import express from 'express'
-import { obtenerProductos, obtenerProductoPorId, crearProducto, actualizarProducto, eliminarProducto, actualizarActivoProducto}
+import { obtenerProductos, obtenerProductoPorId, crearProducto, actualizarProducto, eliminarProducto, actualizarActivoProducto, listarMisProductos}
 from '../controllers/producto.controllers.js'
 import { validarProducto } from '../middlewares/validarProducto.js'
 import { validarId as validarID } from '../middlewares/validarId.middleware.js'
@@ -17,6 +17,7 @@ const controlesArtesano = [
 ];
 
 router.get('/', validarConsultarProducto, obtenerProductos)
+router.get('/me', ...controlesArtesano, listarMisProductos)
 router.get('/:id', validarID, obtenerProductoPorId)
 router.post('/', ...controlesArtesano, validarProducto, crearProducto)
 router.put('/:id', ...controlesArtesano, validarID, validarProducto, actualizarProducto)
