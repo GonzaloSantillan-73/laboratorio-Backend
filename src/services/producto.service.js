@@ -1,18 +1,4 @@
 import prisma from '../config/prisma.js'
-import { crearError } from '../utils/errores.js'
-
-
-const verificarArtesano = async (artesanoId) => {
-    if (artesanoId === undefined || artesanoId === null) {
-        return
-    }
-    const artesano = await prisma.artesano.findUnique({
-        where: { id: artesanoId }
-    })
-    if (!artesano) {
-        throw crearError(`No existe un artesano con ID ${artesanoId}`, 400)
-    }
-}
 
 export const consultarProducto = async (criterios) => {
     const { nombre, descripcion, precio, stock, activo, ordenPor, direccion, pagina, limite } = criterios
@@ -50,31 +36,38 @@ export const consultarProductoPorId = async (id) => {
 }
 
 
-export const crearProducto = async (datos) => {
-    const { nombre, descripcion, precio, stock, artesanoId } = datos
-    await verificarArtesano(artesanoId)
+export const crearProducto = async (datos, usuarioId) => {
+    const { nombre, descripcion, precio, stock } = datos
+    // el artesano sale de la cuenta autenticada, nunca del body
+    const artesano = await prisma.artesano.findUniqueOrThrow({
+        where: { usuarioId }
+    })
     return prisma.producto.create({
-        data: { nombre, descripcion, precio, stock, artesano: { connect: { id: artesanoId } } }, 
+        data: { nombre, descripcion, precio, stock, artesano: { connect: { id: artesano.id } } },
         include: { artesano: true }
     })
 }
 
-export const actualizarProducto = async (id, datos) => {
-    const existe = await prisma.producto.findUnique({ where: { id } })
+export const actualizarProducto = async (id, usuarioId, datos) => {
+    // busca el producto solo entre los del artesano que hace la solicitud
+    const existe = await prisma.producto.findFirst({
+        where: { id, artesano: { usuarioId } }
+    })
     if (!existe) {
         return null
     }
-    const { nombre, descripcion, precio, stock, artesanoId } = datos
-    await verificarArtesano(artesanoId)
+    const { nombre, descripcion, precio, stock } = datos
     return prisma.producto.update({
         where: { id },
-        data: { nombre, descripcion, precio, stock, artesano: { connect: { id: artesanoId } } },
+        data: { nombre, descripcion, precio, stock },
         include: { artesano: true }
     })
 }
 
-export const eliminarProducto = async (id) => {
-    const existe = await prisma.producto.findUnique({ where: { id } })
+export const eliminarProducto = async (id, usuarioId) => {
+    const existe = await prisma.producto.findFirst({
+        where: { id, artesano: { usuarioId } }
+    })
     if (!existe) {
         return null
     }
@@ -93,5 +86,12 @@ export const cambiarActivoProducto = async (id, usuarioId, activo) => {
         where: { id },
         data: { activo },
         select: { id: true, nombre: true, activo: true }
+    })
+}
+
+export const listarMisProductos = async (usuarioId) => {
+    return prisma.producto.findMany({
+        where: { artesano: { usuarioId } },
+        orderBy: { createdAt: 'desc' }
     })
 }

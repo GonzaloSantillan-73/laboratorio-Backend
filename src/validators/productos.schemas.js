@@ -5,8 +5,7 @@ export const ProductoSchema = z.object({
     descripcion: z.string().trim().min(2,'La descripción es obligatoria').max(300),
     precio: z.number().positive('El precio debe ser un número positivo'),
     stock: z.number().int('El stock debe ser un número entero').positive('El stock debe ser un número positivo'),
-    artesanoId: z.number().int('El artesano debe ser un número entero').positive('El artesano debe ser un número positivo'),
-})
+}).strict()
 
 export const consultarProductoSchema = z.object({
     nombre: z.string().trim().max(100).optional(),
