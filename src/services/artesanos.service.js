@@ -13,6 +13,17 @@ const verificarRubros = async (rubrosIds) => {
     }
 }
 
+const verificarLocalidad = async (localidadId) => {
+    const localidad = await prisma.localidad.findUnique({
+        where: { id: localidadId }
+    })
+    if (!localidad) {
+        const error = new Error(`No existe una localidad con ID ${localidadId}`);
+        error.status = 404;
+        throw error;
+    }
+}
+
 export const obtenerArtesanosService = async () => {
     return await prisma.artesano.findMany({
         include: {
@@ -20,6 +31,7 @@ export const obtenerArtesanosService = async () => {
             productos: true,
             stand: true,
             rubros: { include: { rubro: true } },
+            localidad: { include: { provincia: true } },
         },
     });
 };
@@ -32,6 +44,7 @@ export const obtenerArtesanoPorIdService = async (id) => {
             productos: true,
             stand: true,
             rubros: { include: { rubro: true } },
+            localidad: { include: { provincia: true } },
         },
     });
 
@@ -54,13 +67,14 @@ export const crearArtesanoService = async (crearArtesanoDto) => {
         error.status = 404;
         throw error;
     }
-    const { nombreEmprendimiento, trayectoria, localidad, rubrosIds, usuarioId } = crearArtesanoDto;
+    const { nombreEmprendimiento, trayectoria, localidadId, rubrosIds, usuarioId } = crearArtesanoDto;
     await verificarRubros(rubrosIds)
+    await verificarLocalidad(localidadId)
     return await prisma.artesano.create({
         data: {
             nombreEmprendimiento,
             trayectoria,
-            localidad,
+            localidadId,
             usuarioId,
             rubros: {
                 create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } }))
@@ -80,6 +94,9 @@ export const actualizarArtesanoService = async (id, actualizarArtesanoDto) => {
             deleteMany: {},
             create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } }))
         }
+    }
+    if (datos.localidadId) {
+        await verificarLocalidad(datos.localidadId)
     }
     try {
         return await prisma.artesano.update({
@@ -117,7 +134,7 @@ export const consultarArtesanosService = async (criteriosConsulta) => {
     
     const where = {};
     if (localidad) {
-        where.localidad = { contains: localidad, mode: "insensitive" };
+        where.localidad = { nombre: { contains: localidad, mode: "insensitive" } };
     }
     if (rubro) {
         where.rubros = { some: { rubro: { nombre: { contains: rubro, mode: "insensitive" } } } };
@@ -152,12 +169,14 @@ export const obtenerMiArtesano = async (usuarioId) => {
     return prisma.artesano.findUniqueOrThrow({
         where: { usuarioId },
         select: { id: true, nombreEmprendimiento: true, trayectoria: true,
-            localidad: true, estadoSolicitud: true,
+            localidad: { select: { nombre: true, provincia: { select: { nombre: true } } } },
+            estadoSolicitud: true,
             rubros: { select: { rubro: { select: { nombre: true } } } } }
     });
 };
 
 export const asignarArtesano = async (dto) => {
+    await verificarLocalidad(dto.localidadId)
     return prisma.$transaction(async tx => {
         const usuario = await tx.usuario.findUniqueOrThrow({
             where: { id: dto.usuarioId },
@@ -176,7 +195,7 @@ export const asignarArtesano = async (dto) => {
                 artesano: { create: {
                     nombreEmprendimiento: dto.nombreEmprendimiento,
                     trayectoria: dto.trayectoria,
-                    localidad: dto.localidad,
+                    localidadId: dto.localidadId,
                     rubros: { create: dto.rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } })) },
                     estadoSolicitud: "APROBADO"
                 } },
