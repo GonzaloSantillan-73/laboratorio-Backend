@@ -80,13 +80,22 @@ model Pabellon {
     stands Stand[]
 }
 
+model Coordenada {
+    id    Int    @id @default(autoincrement())
+    x     Int
+    y     Int
+    stand Stand?
+
+    @@unique([x, y])
+}
+
 model Stand {
     id          Int    @id @default(autoincrement())
     pabellonId  Int
     pabellon    Pabellon @relation(fields: [pabellonId], references: [id], onDelete: Restrict)
     sector      String
-    coordenadaX Int
-    coordenadaY Int
+    coordenadaId Int        @unique
+    coordenada   Coordenada @relation(fields: [coordenadaId], references: [id], onDelete: Restrict)
     estado      String @default("DISPONIBLE")
 
     createdAt DateTime @default(now())
