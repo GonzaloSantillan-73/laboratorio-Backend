@@ -1,6 +1,19 @@
 import prisma from '../config/prisma.js'
+import { obtenerDeCache, guardarEnCache, limpiarCache } from '../utils/cache.js'
+
 
 export const consultarRubros = async (criterios) => {
+    // la clave depende de los filtros, asi cada busqueda distinta se guarda aparte
+    const clave = 'rubros:' + JSON.stringify(criterios)
+
+    const enCache = obtenerDeCache(clave)
+    if (enCache) {
+        console.log(`[CACHE] Respuesta desde la cache: ${clave}`)
+        return enCache
+    }
+
+    console.log(`[CACHE] No estaba en cache, consultando la base de datos: ${clave}`)
+    
     const { nombre, ordenPor, direccion, pagina, limite } = criterios
 
     const where = {}
@@ -19,7 +32,10 @@ export const consultarRubros = async (criterios) => {
         }),
         prisma.rubro.count({ where })
     ])
-    return { rubros, paginacion: { pagina, limite, total, totalPaginas: Math.ceil(total / limite) } }
+    
+    const resultado = { rubros, paginacion: { pagina, limite, total, totalPaginas: Math.ceil(total / limite) } }
+    guardarEnCache(clave, resultado)
+    return resultado
 }
 
 export const consultarRubroPorId = async (id) => {
@@ -28,9 +44,12 @@ export const consultarRubroPorId = async (id) => {
 
 export const crearRubro = async (datos) => {
     const { nombre } = datos
-    return prisma.rubro.create({
+    const nuevo = await prisma.rubro.create({
         data: { nombre }
     })
+    // cambiaron los datos, la cache ya no sirve
+    limpiarCache('rubros')
+    return nuevo
 }
 
 export const actualizarRubro = async (id, datos) => {
@@ -39,10 +58,12 @@ export const actualizarRubro = async (id, datos) => {
         return null
     }
     const { nombre } = datos
-    return prisma.rubro.update({
+    const actualizado = await prisma.rubro.update({
         where: { id },
         data: { nombre }
     })
+    limpiarCache('rubros')
+    return actualizado
 }
 
 export const eliminarRubro = async (id) => {
@@ -50,5 +71,7 @@ export const eliminarRubro = async (id) => {
     if (!existe) {
         return null
     }
-    return prisma.rubro.delete({ where: { id } })
+    const eliminado = await prisma.rubro.delete({ where: { id } })
+    limpiarCache('rubros')
+    return eliminado
 }
