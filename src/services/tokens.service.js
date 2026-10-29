@@ -7,7 +7,7 @@ export const generarToken = (usuario) => {
     return jwt.sign(
         { sub: usuario.id, jti: randomUUID() },
         secretoJWT,
-        { algorithm: "HS256", expiresIn: "15m" }
+        { algorithm: "HS256", expiresIn: "24h" }
     )
 }
 
