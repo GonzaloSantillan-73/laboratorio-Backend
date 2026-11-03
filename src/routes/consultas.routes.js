@@ -20,9 +20,10 @@ const controlesAdministrador = [
     autorizarRoles("ADMINISTRADOR")
 ];
 
-router.get('/', ...controlesAdministrador, validarConsultaConsultas, obtenerConsultas);
-router.get('/:id', ...controlesAdministrador, validarId, obtenerConsultaPorId);
-router.post('/', validarCreacionConsulta, crearConsulta);
-router.delete('/:id', ...controlesAdministrador, validarId, eliminarConsultaId);
+router.get('/', /* #swagger.summary = "Listar consultas (ADMINISTRADOR)" */ ...controlesAdministrador, validarConsultaConsultas, obtenerConsultas);
+router.get('/:id', /* #swagger.summary = "Consultar una consulta (ADMINISTRADOR)" */ ...controlesAdministrador, validarId, obtenerConsultaPorId);
+router.post('/', /* #swagger.summary = "Registrar una consulta"
+    #swagger.security = [] */ validarCreacionConsulta, crearConsulta);
+router.delete('/:id', /* #swagger.summary = "Eliminar una consulta (ADMINISTRADOR)" */ ...controlesAdministrador, validarId, eliminarConsultaId);
 
 export default router;

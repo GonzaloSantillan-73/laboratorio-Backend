@@ -14,10 +14,17 @@ const controlesAdministrador = [
     autorizarRoles("ADMINISTRADOR")
 ];
 
-router.get('/', validarConsultarRubro, obtenerRubros)
-router.get('/:id', validarID, obtenerRubroPorId)
-router.post('/', ...controlesAdministrador, validarRubro, crearRubro)
-router.put('/:id', ...controlesAdministrador, validarID, validarRubro, actualizarRubro)
-router.delete('/:id', ...controlesAdministrador, validarID, eliminarRubro)
+router.get('/', /* #swagger.summary = "Listar rubros"
+    #swagger.security = [] */ validarConsultarRubro, obtenerRubros)
+router.get('/:id', /* #swagger.summary = "Consultar un rubro"
+    #swagger.security = [] */ validarID, obtenerRubroPorId)
+router.post('/', /* #swagger.summary = "Crear un rubro (ADMINISTRADOR)"
+    #swagger.requestBody = { required: true,
+        content: { "application/json": { schema: { $ref: "#/components/schemas/NuevoRubro" } } } }
+    #swagger.responses[201] = { description: "Rubro creado.",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/RubroCreado" } } } } */
+    ...controlesAdministrador, validarRubro, crearRubro)
+router.put('/:id', /* #swagger.summary = "Modificar un rubro (ADMINISTRADOR)" */ ...controlesAdministrador, validarID, validarRubro, actualizarRubro)
+router.delete('/:id', /* #swagger.summary = "Eliminar un rubro (ADMINISTRADOR)" */ ...controlesAdministrador, validarID, eliminarRubro)
 
 export default router

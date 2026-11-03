@@ -14,10 +14,12 @@ const controlesAdministrador = [
     autorizarRoles("ADMINISTRADOR")
 ];
 
-router.get('/', validarConsultarPabellon, obtenerPabellones)
-router.get('/:id', validarID, obtenerPabellonPorId)
-router.post('/', ...controlesAdministrador, validarPabellon, crearPabellon)
-router.put('/:id', ...controlesAdministrador, validarID, validarPabellon, actualizarPabellon)
-router.delete('/:id', ...controlesAdministrador, validarID, eliminarPabellon)
+router.get('/', /* #swagger.summary = "Listar pabellones"
+    #swagger.security = [] */ validarConsultarPabellon, obtenerPabellones)
+router.get('/:id', /* #swagger.summary = "Consultar un pabellón"
+    #swagger.security = [] */ validarID, obtenerPabellonPorId)
+router.post('/', /* #swagger.summary = "Crear un pabellón (ADMINISTRADOR)" */ ...controlesAdministrador, validarPabellon, crearPabellon)
+router.put('/:id', /* #swagger.summary = "Modificar un pabellón (ADMINISTRADOR)" */ ...controlesAdministrador, validarID, validarPabellon, actualizarPabellon)
+router.delete('/:id', /* #swagger.summary = "Eliminar un pabellón (ADMINISTRADOR)" */ ...controlesAdministrador, validarID, eliminarPabellon)
 
 export default router

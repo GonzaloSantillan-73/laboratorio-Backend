@@ -1,0 +1,4000 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Feria de Artesanos",
+    "version": "1.0.0",
+    "description": "Documentación de la API: usuarios, artesanos, productos y stands de la feria."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "Servidor actual"
+    }
+  ],
+  "paths": {
+    "/api/artesanos/": {
+      "get": {
+        "tags": [
+          "Artesanos"
+        ],
+        "summary": "Listar artesanos aprobados",
+        "description": "Público. Solo muestra artesanos con la solicitud APROBADA.",
+        "parameters": [
+          {
+            "name": "localidad",
+            "in": "query",
+            "description": "Nombre de la localidad (búsqueda parcial).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "rubro",
+            "in": "query",
+            "description": "Nombre del rubro (búsqueda parcial).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "ordenarPor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nombreEmprendimiento",
+                "createdAt",
+                "localidadId"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "direccion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de artesanos aprobados.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListadoArtesanos"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos."
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Artesanos"
+        ],
+        "summary": "Crear un artesano",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Asocia un artesano a un usuario existente.",
+        "responses": {
+          "201": {
+            "description": "Artesano creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Token inválido, vencido o revocado"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario, rubro o localidad inexistente."
+          },
+          "409": {
+            "description": "El usuario ya tiene un artesano o conflicto de datos."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoArtesano"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/artesanos/me": {
+      "get": {
+        "tags": [
+          "Artesanos"
+        ],
+        "summary": "Consultar mi artesano",
+        "description": "JWT, cuenta activa y rol ARTESANO. Devuelve el artesano de la cuenta autenticada.",
+        "responses": {
+          "200": {
+            "description": "Datos del artesano propio.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MiArtesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ARTESANO requerido."
+          },
+          "404": {
+            "description": "La cuenta no tiene un artesano asociado."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/artesanos/solicitudes": {
+      "get": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Listar solicitudes de artesanos",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Incluye todos los estados de solicitud.",
+        "parameters": [
+          {
+            "name": "estadoSolicitud",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDIENTE",
+                "APROBADO",
+                "RECHAZADO",
+                "MODIFICACIONES"
+              ]
+            }
+          },
+          {
+            "name": "localidad",
+            "in": "query",
+            "description": "Nombre de la localidad (búsqueda parcial).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "rubro",
+            "in": "query",
+            "description": "Nombre del rubro (búsqueda parcial).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "ordenarPor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nombreEmprendimiento",
+                "createdAt",
+                "localidadId"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "direccion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de solicitudes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListadoArtesanos"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/artesanos/{id}": {
+      "get": {
+        "tags": [
+          "Artesanos"
+        ],
+        "summary": "Consultar un artesano aprobado",
+        "description": "Público. Devuelve el artesano con sus productos, stand, rubros y localidad.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del artesano.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artesano encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido."
+          },
+          "404": {
+            "description": "Artesano inexistente o sin solicitud aprobada."
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Artesanos"
+        ],
+        "summary": "Modificar un artesano",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del artesano.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artesano modificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o cuerpo inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Artesano, rubro o localidad inexistente."
+          },
+          "409": {
+            "description": "Conflicto de datos (por ejemplo, el usuario ya tiene otro artesano)."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarArtesano"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Artesanos"
+        ],
+        "summary": "Eliminar un artesano",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del artesano.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artesano eliminado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtesanoEliminado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Artesano inexistente."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/artesanos/{id}/solicitud": {
+      "patch": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Resolver la solicitud de un artesano",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del artesano.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Solicitud resuelta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolicitudResuelta"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o estado inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Artesano inexistente."
+          },
+          "409": {
+            "description": "La solicitud ya fue resuelta (APROBADO o RECHAZADO).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "La solicitud ya fue resuelta."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolverSolicitud"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stands/": {
+      "get": {
+        "tags": [
+          "Stands"
+        ],
+        "summary": "Listar stands",
+        "description": "Público. Lista paginada de stands con filtros.",
+        "parameters": [
+          {
+            "name": "pabellon",
+            "in": "query",
+            "description": "Nombre del pabellón (búsqueda parcial).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "sector",
+            "in": "query",
+            "description": "Sector (búsqueda parcial).",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "DISPONIBLE",
+                "OCUPADO"
+              ]
+            }
+          },
+          {
+            "name": "ordenarPor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pabellonId",
+                "sector",
+                "createdAt"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "direccion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de stands.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListadoStands"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos."
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Stands"
+        ],
+        "summary": "Crear un stand",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR.",
+        "responses": {
+          "201": {
+            "description": "Stand creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stand"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Se requiere un token de acceso"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Pabellón, coordenada o artesano inexistente."
+          },
+          "409": {
+            "description": "La coordenada ya está ocupada o el artesano ya tiene un stand."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoStand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stands/{id}": {
+      "get": {
+        "tags": [
+          "Stands"
+        ],
+        "summary": "Consultar un stand",
+        "description": "Público. Devuelve el stand con su pabellón, coordenada y artesano.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del stand.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stand encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stand"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido."
+          },
+          "404": {
+            "description": "Stand inexistente."
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Stands"
+        ],
+        "summary": "Modificar un stand",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del stand.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stand modificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stand"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o cuerpo inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Stand, pabellón o coordenada inexistente."
+          },
+          "409": {
+            "description": "La coordenada ya está ocupada por otro stand o conflicto de datos."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarStand"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Stands"
+        ],
+        "summary": "Eliminar un stand",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del stand.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stand eliminado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandEliminado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Stand inexistente."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/consultas/": {
+      "get": {
+        "tags": [
+          "Consultas"
+        ],
+        "summary": "Listar consultas (ADMINISTRADOR)",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Consultas"
+        ],
+        "summary": "Registrar una consulta",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/consultas/{id}": {
+      "get": {
+        "tags": [
+          "Consultas"
+        ],
+        "summary": "Consultar una consulta (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Consultas"
+        ],
+        "summary": "Eliminar una consulta (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/productos/": {
+      "get": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Listar productos",
+        "description": "Público. Lista paginada de productos con filtros.",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "description": "Búsqueda parcial por nombre.",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "descripcion",
+            "in": "query",
+            "description": "Búsqueda parcial por descripción.",
+            "schema": {
+              "type": "string",
+              "maxLength": 300
+            }
+          },
+          {
+            "name": "precio",
+            "in": "query",
+            "description": "Precio exacto.",
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMinimum": true
+            }
+          },
+          {
+            "name": "stock",
+            "in": "query",
+            "description": "Stock exacto.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "activo",
+            "in": "query",
+            "description": "Productos activos o inactivos.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "true"
+            }
+          },
+          {
+            "name": "ordenPor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nombre",
+                "descripcion",
+                "precio",
+                "stock"
+              ],
+              "default": "nombre"
+            }
+          },
+          {
+            "name": "direccion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de productos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListadoProductos"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos."
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Crear un producto",
+        "description": "JWT, cuenta activa y rol ARTESANO. El artesano sale de la cuenta autenticada: enviar artesanoId produce 400.",
+        "responses": {
+          "201": {
+            "description": "Producto creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Producto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido (incluye campos no permitidos) o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Se requiere un token de acceso"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ARTESANO requerido."
+          },
+          "404": {
+            "description": "La cuenta no tiene un artesano asociado."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoProducto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/productos/me": {
+      "get": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Listar mis productos",
+        "description": "JWT, cuenta activa y rol ARTESANO. Devuelve solo los productos del artesano autenticado.",
+        "responses": {
+          "200": {
+            "description": "Productos propios.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Producto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ARTESANO requerido."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/productos/{id}": {
+      "get": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Consultar un producto",
+        "description": "Público. Devuelve el producto con su artesano.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del producto.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producto encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Producto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido."
+          },
+          "404": {
+            "description": "Producto inexistente."
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Modificar un producto propio",
+        "description": "JWT, cuenta activa y rol ARTESANO. Solo se puede modificar un producto propio.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del producto.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Producto modificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Producto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o cuerpo inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ARTESANO requerido."
+          },
+          "404": {
+            "description": "Producto inexistente o de otro artesano."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoProducto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Eliminar un producto propio",
+        "description": "JWT, cuenta activa y rol ARTESANO. Solo se puede eliminar un producto propio.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del producto.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Producto eliminado. Sin contenido."
+          },
+          "400": {
+            "description": "ID inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ARTESANO requerido."
+          },
+          "404": {
+            "description": "Producto inexistente o de otro artesano."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/productos/{id}/activo": {
+      "patch": {
+        "tags": [
+          "Productos"
+        ],
+        "summary": "Activar o desactivar un producto propio",
+        "description": "JWT, cuenta activa y rol ARTESANO. Solo sobre un producto propio.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID del producto.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado del producto actualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductoActivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o campo activo inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ARTESANO requerido."
+          },
+          "404": {
+            "description": "Producto inexistente o de otro artesano."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambiarActivo"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Listar usuarios",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Lista paginada con filtros.",
+        "parameters": [
+          {
+            "name": "nombre",
+            "in": "query",
+            "description": "Búsqueda parcial por nombre.",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "apellido",
+            "in": "query",
+            "description": "Búsqueda parcial por apellido.",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Búsqueda parcial por email.",
+            "schema": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "rolId",
+            "in": "query",
+            "description": "Usuarios que tienen ese rol.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "ordenPor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nombre",
+                "apellido",
+                "email"
+              ],
+              "default": "nombre"
+            }
+          },
+          {
+            "name": "direccion",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Listado de usuarios.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListadoUsuarios"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parámetros de consulta inválidos o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Crear un usuario",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Crea una cuenta con los roles indicados.",
+        "responses": {
+          "201": {
+            "description": "Usuario creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioGuardado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido, rol inexistente o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoUsuario"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/me": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Consultar mi usuario",
+        "description": "JWT y cuenta activa. Cualquier rol.",
+        "responses": {
+          "200": {
+            "description": "Datos de la cuenta autenticada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MiUsuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/{id}": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Consultar un usuario",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID (UUID) del usuario.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario encontrado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario inexistente."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Modificar un usuario",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Reemplaza los datos y los roles del usuario.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID (UUID) del usuario.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario modificado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioGuardado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o cuerpo inválido, rol inexistente o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario inexistente."
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoUsuario"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Eliminar un usuario",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID (UUID) del usuario.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Usuario eliminado. Sin contenido."
+          },
+          "400": {
+            "description": "ID inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario inexistente."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/postulacion": {
+      "post": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Postularse como artesano",
+        "description": "Público. Crea la cuenta y la solicitud en estado PENDIENTE. El rol ARTESANO se asigna al aprobar.",
+        "responses": {
+          "201": {
+            "description": "Postulación registrada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostulacionCreada"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o con campos no permitidos."
+          },
+          "404": {
+            "description": "Localidad o rubro inexistente."
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Ya existe un registro con esos datos únicos."
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevaPostulacion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/login": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Iniciar sesión",
+        "description": "Público. Devuelve el JWT para usar en el botón Authorize.",
+        "responses": {
+          "200": {
+            "description": "Credenciales correctas.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SesionIniciada"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido."
+          },
+          "401": {
+            "description": "Email o contraseña incorrectos, o cuenta inactiva.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Las credenciales son inválidas."
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesion"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/logout": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Cerrar sesión",
+        "description": "JWT. Revoca el token enviado.",
+        "responses": {
+          "204": {
+            "description": "Sesión cerrada. Sin contenido."
+          },
+          "400": {
+            "description": "Cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Se requiere un token de acceso"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/registro-administrador": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Registrar un administrador",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Crea una cuenta con rol ADMINISTRADOR.",
+        "responses": {
+          "201": {
+            "description": "Administrador creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdministradorCreado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "409": {
+            "description": "Ya existe un usuario con ese email."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistroAdministrador"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/asignar-artesano": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Asignar un artesano a un administrador",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. El usuario destino debe ser administrador activo y no tener artesano.",
+        "responses": {
+          "201": {
+            "description": "Artesano creado y aprobado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Artesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario, localidad o rubro inexistente."
+          },
+          "409": {
+            "description": "Requiere administrador activo sin artesano."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarArtesano"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/{id}/roles": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Asignar el rol ADMINISTRADOR",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Solo se puede asignar ADMINISTRADOR.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID (UUID) del usuario.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rol asignado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolAsignado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o rol inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario inexistente."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarRol"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/usuarios/{id}/roles/{rol}": {
+      "delete": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Quitar un rol a un usuario",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. El usuario debe conservar al menos un rol.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID (UUID) del usuario.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "rol",
+            "in": "path",
+            "required": true,
+            "description": "Rol a quitar.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ARTESANO",
+                "ADMINISTRADOR"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rol quitado. Sin contenido."
+          },
+          "400": {
+            "description": "ID o rol inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario inexistente."
+          },
+          "409": {
+            "description": "Debe conservar un rol o debe quedar un administrador activo."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/usuarios/{id}/activo": {
+      "patch": {
+        "tags": [
+          "Usuarios"
+        ],
+        "summary": "Activar o desactivar una cuenta",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Debe quedar al menos un administrador activo.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID (UUID) del usuario.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado de la cuenta actualizado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioActivo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ID o campo activo inválido, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
+          },
+          "404": {
+            "description": "Usuario inexistente."
+          },
+          "409": {
+            "description": "Debe quedar un administrador activo."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambiarActivo"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/roles/": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Listar roles",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Crear un rol (ADMINISTRADOR)",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/roles/{id}": {
+      "get": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Consultar un rol",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Modificar un rol (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Roles"
+        ],
+        "summary": "Eliminar un rol (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/rubros/": {
+      "get": {
+        "tags": [
+          "Rubros"
+        ],
+        "summary": "Listar rubros",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Rubros"
+        ],
+        "summary": "Crear un rubro (ADMINISTRADOR)",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Rubro creado.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RubroCreado"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NuevoRubro"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rubros/{id}": {
+      "get": {
+        "tags": [
+          "Rubros"
+        ],
+        "summary": "Consultar un rubro",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Rubros"
+        ],
+        "summary": "Modificar un rubro (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Rubros"
+        ],
+        "summary": "Eliminar un rubro (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/pabellones/": {
+      "get": {
+        "tags": [
+          "Pabellones"
+        ],
+        "summary": "Listar pabellones",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Pabellones"
+        ],
+        "summary": "Crear un pabellón (ADMINISTRADOR)",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/pabellones/{id}": {
+      "get": {
+        "tags": [
+          "Pabellones"
+        ],
+        "summary": "Consultar un pabellón",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Pabellones"
+        ],
+        "summary": "Modificar un pabellón (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Pabellones"
+        ],
+        "summary": "Eliminar un pabellón (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coordenadas/": {
+      "get": {
+        "tags": [
+          "Coordenadas"
+        ],
+        "summary": "Listar coordenadas",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "tags": [
+          "Coordenadas"
+        ],
+        "summary": "Crear una coordenada (ADMINISTRADOR)",
+        "description": "",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/coordenadas/{id}": {
+      "get": {
+        "tags": [
+          "Coordenadas"
+        ],
+        "summary": "Consultar una coordenada",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      },
+      "put": {
+        "tags": [
+          "Coordenadas"
+        ],
+        "summary": "Modificar una coordenada (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Coordenadas"
+        ],
+        "summary": "Eliminar una coordenada (ADMINISTRADOR)",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/provincias/": {
+      "get": {
+        "tags": [
+          "Ubicaciones"
+        ],
+        "summary": "Listar provincias",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/departamentos/": {
+      "get": {
+        "tags": [
+          "Ubicaciones"
+        ],
+        "summary": "Listar departamentos",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/localidades/": {
+      "get": {
+        "tags": [
+          "Ubicaciones"
+        ],
+        "summary": "Listar localidades",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/localidades/{id}": {
+      "get": {
+        "tags": [
+          "Ubicaciones"
+        ],
+        "summary": "Consultar una localidad",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ActualizarArtesano": {
+        "type": "object",
+        "properties": {
+          "localidadId": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "nombreEmprendimiento": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rubrosIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991
+            }
+          },
+          "trayectoria": {
+            "type": "string",
+            "minLength": 1
+          },
+          "usuarioId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "example": {
+          "trayectoria": "12 años trabajando la cerámica"
+        }
+      },
+      "ActualizarStand": {
+        "type": "object",
+        "properties": {
+          "pabellonId": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sector": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coordenadaId": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "estado": {
+            "default": "DISPONIBLE",
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO"
+            ]
+          },
+          "artesanoId": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          }
+        },
+        "example": {
+          "estado": "OCUPADO",
+          "artesanoId": 2
+        }
+      },
+      "AdministradorCreado": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "apellido",
+          "email",
+          "activo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Artesano": {
+        "type": "object",
+        "required": [
+          "id",
+          "usuarioId",
+          "nombreEmprendimiento",
+          "trayectoria",
+          "localidadId",
+          "estadoSolicitud"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "usuarioId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombreEmprendimiento": {
+            "type": "string"
+          },
+          "trayectoria": {
+            "type": "string"
+          },
+          "localidadId": {
+            "type": "string"
+          },
+          "estadoSolicitud": {
+            "type": "string",
+            "enum": [
+              "PENDIENTE",
+              "APROBADO",
+              "RECHAZADO",
+              "MODIFICACIONES"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "usuario": {
+            "type": "object",
+            "description": "Se incluye en el detalle, el listado y la creación.",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "nombre": {
+                "type": "string"
+              },
+              "apellido": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            }
+          },
+          "rubros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "artesanoId": {
+                  "type": "integer"
+                },
+                "rubroId": {
+                  "type": "integer"
+                },
+                "rubro": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "nombre": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "id": 2,
+          "usuarioId": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+          "nombreEmprendimiento": "Cerámica del Valle",
+          "trayectoria": "10 años trabajando la cerámica",
+          "localidadId": "10049010000",
+          "estadoSolicitud": "APROBADO",
+          "createdAt": "2026-10-20T12:00:00.000Z",
+          "updatedAt": "2026-10-20T12:00:00.000Z",
+          "usuario": {
+            "id": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+            "nombre": "Laura",
+            "apellido": "Gómez",
+            "email": "laura@correo.com"
+          },
+          "rubros": [
+            {
+              "artesanoId": 2,
+              "rubroId": 1,
+              "rubro": {
+                "id": 1,
+                "nombre": "Cerámica"
+              }
+            }
+          ]
+        }
+      },
+      "ArtesanoEliminado": {
+        "type": "object",
+        "required": [
+          "message",
+          "artesano"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "artesano": {
+            "$ref": "#/components/schemas/Artesano"
+          }
+        }
+      },
+      "AsignarArtesano": {
+        "type": "object",
+        "properties": {
+          "localidadId": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "nombreEmprendimiento": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rubrosIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991
+            }
+          },
+          "trayectoria": {
+            "type": "string",
+            "minLength": 1
+          },
+          "usuarioId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "localidadId",
+          "nombreEmprendimiento",
+          "rubrosIds",
+          "trayectoria",
+          "usuarioId"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "usuarioId": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+          "nombreEmprendimiento": "Tejidos Norteños",
+          "trayectoria": "Tejedora desde 2015",
+          "localidadId": "10049010000",
+          "rubrosIds": [
+            3
+          ]
+        }
+      },
+      "AsignarRol": {
+        "type": "object",
+        "properties": {
+          "rol": {
+            "type": "string",
+            "enum": [
+              "ADMINISTRADOR"
+            ]
+          }
+        },
+        "required": [
+          "rol"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "rol": "ADMINISTRADOR"
+        }
+      },
+      "CambiarActivo": {
+        "type": "object",
+        "properties": {
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "activo"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "activo": false
+        }
+      },
+      "ErrorApi": {
+        "type": "object",
+        "required": [
+          "mensaje"
+        ],
+        "properties": {
+          "mensaje": {
+            "type": "string"
+          },
+          "errores": {
+            "type": "array",
+            "description": "Detalle de Zod. Solo aparece en algunos errores de validación.",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "InicioSesion": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "example": {
+          "email": "admin@feria.com",
+          "password": "Admin1234"
+        }
+      },
+      "ListadoArtesanos": {
+        "type": "object",
+        "required": [
+          "artesanos",
+          "paginacion"
+        ],
+        "properties": {
+          "artesanos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Artesano"
+            }
+          },
+          "paginacion": {
+            "$ref": "#/components/schemas/Paginacion"
+          }
+        }
+      },
+      "ListadoProductos": {
+        "type": "object",
+        "required": [
+          "productos",
+          "paginacion"
+        ],
+        "properties": {
+          "productos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Producto"
+            }
+          },
+          "paginacion": {
+            "$ref": "#/components/schemas/Paginacion"
+          }
+        }
+      },
+      "ListadoStands": {
+        "type": "object",
+        "required": [
+          "stands",
+          "paginacion"
+        ],
+        "properties": {
+          "stands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Stand"
+            }
+          },
+          "paginacion": {
+            "$ref": "#/components/schemas/Paginacion"
+          }
+        }
+      },
+      "ListadoUsuarios": {
+        "type": "object",
+        "required": [
+          "usuarios",
+          "paginacion"
+        ],
+        "properties": {
+          "usuarios": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Usuario"
+            }
+          },
+          "paginacion": {
+            "$ref": "#/components/schemas/Paginacion"
+          }
+        }
+      },
+      "MiArtesano": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombreEmprendimiento",
+          "trayectoria",
+          "estadoSolicitud"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombreEmprendimiento": {
+            "type": "string"
+          },
+          "trayectoria": {
+            "type": "string"
+          },
+          "estadoSolicitud": {
+            "type": "string"
+          },
+          "localidad": {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string"
+              },
+              "provincia": {
+                "type": "object",
+                "properties": {
+                  "nombre": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "rubros": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rubro": {
+                  "type": "object",
+                  "properties": {
+                    "nombre": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "MiUsuario": {
+        "type": "object",
+        "required": [
+          "usuario"
+        ],
+        "properties": {
+          "usuario": {
+            "$ref": "#/components/schemas/Usuario"
+          }
+        }
+      },
+      "NuevaPostulacion": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2
+          },
+          "apellido": {
+            "type": "string",
+            "minLength": 2
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          },
+          "nombreEmprendimiento": {
+            "type": "string",
+            "minLength": 1
+          },
+          "trayectoria": {
+            "type": "string",
+            "minLength": 1
+          },
+          "localidadId": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "rubrosIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "required": [
+          "nombre",
+          "apellido",
+          "email",
+          "password",
+          "nombreEmprendimiento",
+          "trayectoria",
+          "localidadId",
+          "rubrosIds"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "nombre": "Laura",
+          "apellido": "Gómez",
+          "email": "laura@correo.com",
+          "password": "Clave12345",
+          "nombreEmprendimiento": "Cerámica del Valle",
+          "trayectoria": "10 años trabajando la cerámica",
+          "localidadId": "10049010000",
+          "rubrosIds": [
+            1,
+            2
+          ]
+        }
+      },
+      "NuevoArtesano": {
+        "type": "object",
+        "properties": {
+          "localidadId": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "nombreEmprendimiento": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rubrosIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991
+            }
+          },
+          "trayectoria": {
+            "type": "string",
+            "minLength": 1
+          },
+          "usuarioId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "localidadId",
+          "nombreEmprendimiento",
+          "rubrosIds",
+          "trayectoria",
+          "usuarioId"
+        ],
+        "example": {
+          "usuarioId": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+          "nombreEmprendimiento": "Cerámica del Valle",
+          "trayectoria": "10 años trabajando la cerámica",
+          "localidadId": "10049010000",
+          "rubrosIds": [
+            1,
+            2
+          ]
+        }
+      },
+      "NuevoProducto": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 300
+          },
+          "precio": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "nombre",
+          "descripcion",
+          "precio",
+          "stock"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "nombre": "Vasija de barro",
+          "descripcion": "Vasija pintada a mano",
+          "precio": 15000,
+          "stock": 5
+        }
+      },
+      "NuevoRubro": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "nombre"
+        ],
+        "example": {
+          "nombre": "Artesanías en Cuero"
+        }
+      },
+      "NuevoStand": {
+        "type": "object",
+        "properties": {
+          "pabellonId": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "sector": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coordenadaId": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "estado": {
+            "default": "DISPONIBLE",
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO"
+            ]
+          },
+          "artesanoId": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "pabellonId",
+          "sector",
+          "coordenadaId"
+        ],
+        "example": {
+          "pabellonId": 1,
+          "sector": "A",
+          "coordenadaId": 4,
+          "estado": "DISPONIBLE"
+        }
+      },
+      "NuevoUsuario": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "apellido": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 100,
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 100
+          },
+          "rolesIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "required": [
+          "nombre",
+          "apellido",
+          "email",
+          "password",
+          "rolesIds"
+        ],
+        "example": {
+          "nombre": "Juan",
+          "apellido": "Pérez",
+          "email": "juan@correo.com",
+          "password": "clave123",
+          "rolesIds": [
+            1
+          ]
+        }
+      },
+      "Paginacion": {
+        "type": "object",
+        "required": [
+          "pagina",
+          "limite",
+          "total",
+          "totalPaginas"
+        ],
+        "properties": {
+          "pagina": {
+            "type": "integer"
+          },
+          "limite": {
+            "type": "integer"
+          },
+          "total": {
+            "type": "integer"
+          },
+          "totalPaginas": {
+            "type": "integer"
+          }
+        }
+      },
+      "PostulacionCreada": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "apellido",
+          "email",
+          "activo",
+          "artesano"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "artesano": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "estadoSolicitud": {
+                "type": "string",
+                "enum": [
+                  "PENDIENTE"
+                ]
+              }
+            }
+          }
+        },
+        "example": {
+          "id": "8a1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e",
+          "nombre": "Laura",
+          "apellido": "Gómez",
+          "email": "laura@correo.com",
+          "activo": true,
+          "artesano": {
+            "id": 7,
+            "estadoSolicitud": "PENDIENTE"
+          }
+        }
+      },
+      "Producto": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "descripcion",
+          "precio",
+          "stock",
+          "activo",
+          "artesanoId"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "precio": {
+            "type": "number"
+          },
+          "stock": {
+            "type": "integer"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "artesanoId": {
+            "type": "integer"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "artesano": {
+            "type": "object",
+            "description": "Se incluye en el detalle, la creación y la modificación."
+          }
+        },
+        "example": {
+          "id": 5,
+          "nombre": "Vasija de barro",
+          "descripcion": "Vasija pintada a mano",
+          "precio": 15000,
+          "stock": 5,
+          "activo": true,
+          "artesanoId": 2,
+          "createdAt": "2026-10-20T12:00:00.000Z",
+          "updatedAt": "2026-10-20T12:00:00.000Z"
+        }
+      },
+      "ProductoActivo": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "activo"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "id": 5,
+          "nombre": "Vasija de barro",
+          "activo": false
+        }
+      },
+      "RegistroAdministrador": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 2
+          },
+          "apellido": {
+            "type": "string",
+            "minLength": 2
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "nombre",
+          "apellido",
+          "email",
+          "password"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "nombre": "Ana",
+          "apellido": "López",
+          "email": "ana@feria.com",
+          "password": "Admin1234"
+        }
+      },
+      "ResolverSolicitud": {
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "APROBADO",
+              "RECHAZADO",
+              "MODIFICACIONES"
+            ]
+          }
+        },
+        "required": [
+          "estado"
+        ],
+        "additionalProperties": false,
+        "example": {
+          "estado": "APROBADO"
+        }
+      },
+      "RolAsignado": {
+        "type": "object",
+        "required": [
+          "mensaje"
+        ],
+        "properties": {
+          "mensaje": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "mensaje": "Rol ADMINISTRADOR asignado."
+        }
+      },
+      "RubroCreado": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "id": 1,
+          "nombre": "Artesanías en Cuero"
+        }
+      },
+      "SesionIniciada": {
+        "type": "object",
+        "required": [
+          "mensaje",
+          "token",
+          "usuario"
+        ],
+        "properties": {
+          "mensaje": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "usuario": {
+            "type": "object",
+            "required": [
+              "id",
+              "nombre",
+              "apellido",
+              "email"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "nombre": {
+                "type": "string"
+              },
+              "apellido": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          }
+        },
+        "example": {
+          "mensaje": "Credenciales verificadas correctamente.",
+          "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+          "usuario": {
+            "id": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+            "nombre": "Ana",
+            "apellido": "López",
+            "email": "admin@feria.com"
+          }
+        }
+      },
+      "SolicitudResuelta": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombreEmprendimiento",
+          "estadoSolicitud"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "nombreEmprendimiento": {
+            "type": "string"
+          },
+          "estadoSolicitud": {
+            "type": "string",
+            "enum": [
+              "APROBADO",
+              "RECHAZADO",
+              "MODIFICACIONES"
+            ]
+          }
+        },
+        "example": {
+          "id": 7,
+          "nombreEmprendimiento": "Cerámica del Valle",
+          "estadoSolicitud": "APROBADO"
+        }
+      },
+      "Stand": {
+        "type": "object",
+        "required": [
+          "id",
+          "pabellonId",
+          "sector",
+          "coordenadaId",
+          "estado"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "pabellonId": {
+            "type": "integer"
+          },
+          "sector": {
+            "type": "string"
+          },
+          "coordenadaId": {
+            "type": "integer"
+          },
+          "estado": {
+            "type": "string",
+            "enum": [
+              "DISPONIBLE",
+              "OCUPADO"
+            ]
+          },
+          "artesanoId": {
+            "type": "integer",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "pabellon": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "nombre": {
+                "type": "string"
+              }
+            }
+          },
+          "coordenada": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "x": {
+                "type": "integer"
+              },
+              "y": {
+                "type": "integer"
+              }
+            }
+          },
+          "artesano": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "example": {
+          "id": 3,
+          "pabellonId": 1,
+          "sector": "A",
+          "coordenadaId": 4,
+          "estado": "DISPONIBLE",
+          "artesanoId": null,
+          "createdAt": "2026-10-20T12:00:00.000Z",
+          "updatedAt": "2026-10-20T12:00:00.000Z",
+          "pabellon": {
+            "id": 1,
+            "nombre": "Pabellón Norte"
+          },
+          "coordenada": {
+            "id": 4,
+            "x": 2,
+            "y": 3
+          },
+          "artesano": null
+        }
+      },
+      "StandEliminado": {
+        "type": "object",
+        "required": [
+          "mensaje",
+          "stand"
+        ],
+        "properties": {
+          "mensaje": {
+            "type": "string"
+          },
+          "stand": {
+            "$ref": "#/components/schemas/Stand"
+          }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "apellido",
+          "email",
+          "activo",
+          "roles"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "id": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+          "nombre": "Juan",
+          "apellido": "Pérez",
+          "email": "juan@correo.com",
+          "activo": true,
+          "roles": [
+            "ADMINISTRADOR"
+          ]
+        }
+      },
+      "UsuarioActivo": {
+        "type": "object",
+        "required": [
+          "id",
+          "activo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "example": {
+          "id": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+          "activo": false
+        }
+      },
+      "UsuarioGuardado": {
+        "type": "object",
+        "required": [
+          "id",
+          "nombre",
+          "apellido",
+          "email",
+          "activo",
+          "roles"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "rol": {
+                  "type": "object",
+                  "properties": {
+                    "nombre": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "example": {
+          "id": "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
+          "nombre": "Juan",
+          "apellido": "Pérez",
+          "email": "juan@correo.com",
+          "activo": true,
+          "roles": [
+            {
+              "rol": {
+                "nombre": "ADMINISTRADOR"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
