@@ -9,32 +9,71 @@ import rolesRoutes from './src/routes/roles.routes.js'
 import rubrosRoutes from './src/routes/rubros.routes.js'
 import pabellonesRoutes from './src/routes/pabellones.routes.js'
 import coordenadasRoutes from './src/routes/coordenadas.routes.js'
-import { provinciasRouter, departamentosRouter, localidadesRouter } from './src/routes/localidades.routes.js'
+import provinciasRouter from './src/routes/provincias.routes.js'
+import departamentosRouter from './src/routes/departamentos.routes.js'
+import localidadesRouter from './src/routes/localidades.routes.js'
 import "./src/config/jwt.js"
 import { iniciarLimpiezaRevocaciones } from './src/tareas/limpiezaRevocaciones.js'
+
+import swaggerUi from "swagger-ui-express";
+import { readFileSync } from "node:fs";
 
 const app = express();
 app.use(express.json());
 
 const PORT = 3000;
 
+// Carga de la documentación OpenAPI generada
+const swaggerDocument = JSON.parse(
+    readFileSync(new URL("./swagger-output.json", import.meta.url), "utf8"),
+);
+
 app.get('/', (req, res) => {
+    // #swagger.ignore = true
     res.send('Bienvenido a la API REST');
 });
 
 //rutas
-app.use('/api/artesanos', artesanosRoutes)
-app.use('/api/stands', standRoutes);
-app.use('/api/consultas', consultasRoutes);
-app.use('/api/productos', productosRoutes)
-app.use('/api/usuarios', usuarioRoutes)
-app.use('/api/roles', rolesRoutes)
-app.use('/api/rubros', rubrosRoutes)
-app.use('/api/pabellones', pabellonesRoutes)
-app.use('/api/coordenadas', coordenadasRoutes)
-app.use('/api/provincias', provinciasRouter)
-app.use('/api/departamentos', departamentosRouter)
-app.use('/api/localidades', localidadesRouter)
+// #swagger.security se hereda en todas las operaciones del router.
+// Las operaciones públicas lo anulan con #swagger.security = [] en su ruta.
+app.use('/api/artesanos', artesanosRoutes
+    /* #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/stands', standRoutes
+    /* #swagger.security = [{ bearerAuth: [] }] */
+);
+app.use('/api/consultas', consultasRoutes
+    /* #swagger.tags = ["Consultas"]
+       #swagger.security = [{ bearerAuth: [] }] */
+);
+app.use('/api/productos', productosRoutes
+    /* #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/usuarios', usuarioRoutes
+    /* #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/roles', rolesRoutes
+    /* #swagger.tags = ["Roles"]
+       #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/rubros', rubrosRoutes
+    /* #swagger.tags = ["Rubros"]
+       #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/pabellones', pabellonesRoutes
+    /* #swagger.tags = ["Pabellones"]
+       #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/coordenadas', coordenadasRoutes
+    /* #swagger.tags = ["Coordenadas"]
+       #swagger.security = [{ bearerAuth: [] }] */
+)
+app.use('/api/provincias', provinciasRouter /* #swagger.tags = ["Ubicaciones"] */)
+app.use('/api/departamentos', departamentosRouter /* #swagger.tags = ["Ubicaciones"] */)
+app.use('/api/localidades', localidadesRouter /* #swagger.tags = ["Ubicaciones"] */)
+
+// Publicación de Swagger UI en la ruta /docs
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use((req, res, next) => {
     const error = new Error(`Ruta no encontrada: ${req.method} ${req.originalUrl}`);

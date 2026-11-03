@@ -14,10 +14,12 @@ const controlesAdministrador = [
     autorizarRoles("ADMINISTRADOR")
 ];
 
-router.get('/', validarConsultarCoordenada, obtenerCoordenadas)
-router.get('/:id', validarID, obtenerCoordenadaPorId)
-router.post('/', ...controlesAdministrador, validarCoordenada, crearCoordenada)
-router.put('/:id', ...controlesAdministrador, validarID, validarCoordenada, actualizarCoordenada)
-router.delete('/:id', ...controlesAdministrador, validarID, eliminarCoordenada)
+router.get('/', /* #swagger.summary = "Listar coordenadas"
+    #swagger.security = [] */ validarConsultarCoordenada, obtenerCoordenadas)
+router.get('/:id', /* #swagger.summary = "Consultar una coordenada"
+    #swagger.security = [] */ validarID, obtenerCoordenadaPorId)
+router.post('/', /* #swagger.summary = "Crear una coordenada (ADMINISTRADOR)" */ ...controlesAdministrador, validarCoordenada, crearCoordenada)
+router.put('/:id', /* #swagger.summary = "Modificar una coordenada (ADMINISTRADOR)" */ ...controlesAdministrador, validarID, validarCoordenada, actualizarCoordenada)
+router.delete('/:id', /* #swagger.summary = "Eliminar una coordenada (ADMINISTRADOR)" */ ...controlesAdministrador, validarID, eliminarCoordenada)
 
 export default router
