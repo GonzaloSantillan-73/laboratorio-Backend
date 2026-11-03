@@ -18,7 +18,7 @@ import { iniciarLimpiezaRevocaciones } from './src/tareas/limpiezaRevocaciones.j
 import swaggerUi from "swagger-ui-express";
 import { readFileSync } from "node:fs";
 
-const app = express();
+export const app = express();
 app.use(express.json());
 
 const PORT = 3000;
@@ -101,7 +101,10 @@ app.use((err, req, res, next) => {
 
 app.use(manejadorErrores)
 
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
-    iniciarLimpiezaRevocaciones();
-});
+// En modo test no se abre el puerto ni se inicia la limpieza periódica:
+// Supertest usa la app importada con un puerto temporal.
+if (process.env.NODE_ENV !== "test")
+    app.listen(PORT, () => {
+        console.log(`Servidor escuchando en el puerto http://localhost:${PORT}`);
+        iniciarLimpiezaRevocaciones();
+    });
