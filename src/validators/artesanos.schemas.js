@@ -22,3 +22,17 @@ export const consultarArtesanosSchema = z.object({
 export const resolverSolicitudSchema = z
     .object({ estado: z.enum(["APROBADO", "RECHAZADO", "MODIFICACIONES"]) })
     .strict();
+
+// el postulante corrige su solicitud cuando el admin le pide modificaciones
+// usa las mismas reglas que al crear el artesano
+export const modificarSolicitudSchema = z.object({
+    nombreEmprendimiento: crearArtesanoSchema.shape.nombreEmprendimiento,
+    trayectoria: crearArtesanoSchema.shape.trayectoria,
+    localidadId: crearArtesanoSchema.shape.localidadId,
+    rubrosIds: crearArtesanoSchema.shape.rubrosIds
+})
+    .partial() // todos los campos son opcionales
+    .strict() // no deja mandar otros campos (ej: estadoSolicitud)
+    .refine(data => Object.keys(data).length > 0, { // pero tiene que mandar al menos uno
+    message: "Debe enviar al menos un dato para modificar.",
+});

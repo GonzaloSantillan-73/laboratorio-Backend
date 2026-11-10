@@ -6,6 +6,7 @@ import {
     eliminarArtesanoService,
     consultarArtesanosService,
     obtenerMiArtesano,
+    modificarMiSolicitudService,
     resolverSolicitudService
 } from "../services/artesanos.service.js";
 
@@ -70,6 +71,14 @@ export const consultarMiArtesano = async (req, res) => {
     const datos = await obtenerMiArtesano(
         req.contextoUsuario.id);
     return res.json(datos);
+};
+
+// el postulante corrige su propia solicitud
+export const modificarMiSolicitud = async (req, res) => {
+    // el id sale del token, asi nadie puede modificar la solicitud de otro
+    const artesano = await modificarMiSolicitudService(
+        req.contextoUsuario.id, req.bodyValidado);
+    return res.json(artesano);
 };
 
 export const resolverSolicitud = async (req, res) => {

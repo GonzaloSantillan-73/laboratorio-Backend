@@ -10,7 +10,8 @@ import {
 import {
     crearArtesanoSchema,
     actualizarArtesanoSchema,
-    resolverSolicitudSchema
+    resolverSolicitudSchema,
+    modificarSolicitudSchema
 } from "../validators/artesanos.schemas.js";
 import { ProductoSchema } from "../validators/productos.schemas.js";
 import { crearStandSchema, actualizarStandSchema } from "../validators/stands.schemas.js";
@@ -88,6 +89,11 @@ export const ActualizarArtesano = {
 export const ResolverSolicitud = {
     ...z.toJSONSchema(resolverSolicitudSchema, opciones),
     example: { estado: "APROBADO" }
+};
+
+export const ModificarSolicitud = {
+    ...z.toJSONSchema(modificarSolicitudSchema, opciones),
+    example: { trayectoria: "10 años trabajando la cerámica. Expuse en ferias de Catamarca y Tucumán.", rubrosIds: [2] }
 };
 
 export const NuevoProducto = {

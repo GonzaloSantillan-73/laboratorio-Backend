@@ -210,6 +210,49 @@ export const asignarArtesano = async (dto) => {
     });
 };
 
+export const modificarMiSolicitudService = async (usuarioId, datos) => {
+    // busca la solicitud del usuario logueado
+    const artesano = await prisma.artesano.findUnique({
+        where: { usuarioId }
+    })
+    if (!artesano) {
+        const error = new Error("La cuenta no tiene una solicitud de artesano.");
+        error.status = 404;
+        throw error;
+    }
+    // solo se puede corregir si el administrador pidio modificaciones
+    if (artesano.estadoSolicitud !== "MODIFICACIONES") {
+        const error = new Error("Solo se puede modificar la solicitud cuando el administrador pide modificaciones.");
+        error.status = 409;
+        throw error;
+    }
+
+    // los rubros van aparte porque son una relacion
+    const { rubrosIds, ...resto } = datos;
+    // al corregirla vuelve a PENDIENTE para que el administrador la revise de nuevo
+    const data = { ...resto, estadoSolicitud: "PENDIENTE" };
+    if (rubrosIds) {
+        await verificarRubros(rubrosIds)
+        // se borran los rubros que tenia y se ponen los nuevos
+        data.rubros = {
+            deleteMany: {},
+            create: rubrosIds.map(rubroId => ({ rubro: { connect: { id: rubroId } } }))
+        }
+    }
+    if (resto.localidadId) {
+        await verificarLocalidad(resto.localidadId)
+    }
+
+    // guarda los cambios y devuelve la solicitud actualizada
+    return await prisma.artesano.update({
+        where: { id: artesano.id },
+        data: data,
+        select: { id: true, nombreEmprendimiento: true, trayectoria: true, localidadId: true,
+            estadoSolicitud: true,
+            rubros: { select: { rubro: { select: { nombre: true } } } } }
+    });
+};
+
 export const resolverSolicitudService = async (id, estado) => {
     return prisma.$transaction(async tx => {
         const artesano = await tx.artesano.findUniqueOrThrow({

@@ -124,7 +124,7 @@ const bodiesExtra = {
 // Qué token usa cada endpoint (sale de la descripción / resumen de Swagger)
 const tokenPara = (op) => {
     const texto = `${op.summary ?? ""} ${op.description ?? ""}`;
-    if (/rol ARTESANO/.test(texto)) return TOKEN_ARTESANO;
+    if (/rol ARTESANO|pidió MODIFICACIONES|el postulante ve/.test(texto)) return TOKEN_ARTESANO;
     if (/^Público/.test(op.description ?? "")) return null;
     if (/JWT|ADMINISTRADOR/.test(texto)) return TOKEN_ADMIN;
     return null; // GET públicos sin descripción (rubros, roles, pabellones, coordenadas, ubicaciones)
@@ -419,6 +419,106 @@ const flujoStands = {
     ]
 };
 
+// Segundo postulante, para no mezclarlo con el del flujo 01
+const EMAIL_PEDRO = `pedro.ruiz${SUFIJO}@correo.com`;
+const TOKEN_PEDRO = "PEGAR_TOKEN_PEDRO";
+
+const flujoModificaciones = {
+    name: "03 - Flujo: El admin pide modificaciones",
+    description: "El administrador no aprueba ni rechaza: pide modificaciones. El postulante ve su solicitud, la corrige y vuelve a PENDIENTE; recién ahí el admin la aprueba. Ejecutar en orden.\n\nReemplazar a mano: PEGAR_TOKEN_ADMIN, PEGAR_TOKEN_PEDRO y PEGAR_ID_PEDRO.",
+    item: [
+        loginAdmin(),
+        request({
+            nombre: "✅ 201 - Pedro se postula (copiar artesano.id)",
+            metodo: "POST", camino: "/api/usuarios/postulacion",
+            body: {
+                nombre: "Pedro", apellido: "Ruiz", email: EMAIL_PEDRO, password: PASSWORD_POSTULANTE,
+                nombreEmprendimiento: "Maderas del Ambato", trayectoria: "Tallo madera",
+                localidadId: LOCALIDAD_ID, rubrosIds: [5]
+            },
+            codigo: 201,
+            descripcion: "Copiar artesano.id de la respuesta: se usa en lugar de PEGAR_ID_PEDRO."
+        }),
+        request({
+            nombre: "✅ 200 - Login de Pedro (copiar el token)",
+            metodo: "POST", camino: "/api/usuarios/login",
+            body: { email: EMAIL_PEDRO, password: PASSWORD_POSTULANTE },
+            codigo: 200,
+            descripcion: "Copiar el token de la respuesta y pegarlo donde dice PEGAR_TOKEN_PEDRO."
+        }),
+        request({
+            nombre: "✅ 200 - Pedro consulta su solicitud (PENDIENTE)",
+            metodo: "GET", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            codigo: 200
+        }),
+        request({
+            nombre: "❌ 409 - Pedro intenta corregir sin que se lo pidan",
+            metodo: "PUT", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            body: { trayectoria: "Tallo madera hace 8 años" },
+            codigo: 409
+        }),
+        request({
+            nombre: "✅ 200 - Admin pide MODIFICACIONES",
+            metodo: "PATCH", camino: "/api/artesanos/PEGAR_ID_PEDRO/solicitud", token: TOKEN_ADMIN,
+            body: { estado: "MODIFICACIONES" },
+            codigo: 200
+        }),
+        request({
+            nombre: "✅ 200 - Pedro ve que le pidieron MODIFICACIONES",
+            metodo: "GET", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            codigo: 200
+        }),
+        request({
+            nombre: "❌ 403 - Pedro todavía no puede cargar productos",
+            metodo: "POST", camino: "/api/productos", token: TOKEN_PEDRO,
+            body: { nombre: "Cuchara de algarrobo", descripcion: "Tallada a mano", precio: 4000, stock: 10 },
+            codigo: 403
+        }),
+        request({
+            nombre: "❌ 400 - Corregir sin enviar datos",
+            metodo: "PUT", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            body: {},
+            codigo: 400
+        }),
+        request({
+            nombre: "❌ 400 - Corregir enviando el estado",
+            metodo: "PUT", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            body: { trayectoria: "Tallo madera hace 8 años", estadoSolicitud: "APROBADO" },
+            codigo: 400
+        }),
+        request({
+            nombre: "❌ 404 - Corregir con un rubro inexistente",
+            metodo: "PUT", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            body: { rubrosIds: [99999] },
+            codigo: 404
+        }),
+        request({
+            nombre: "✅ 200 - Pedro corrige su solicitud (vuelve a PENDIENTE)",
+            metodo: "PUT", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            body: { trayectoria: "Tallo madera hace 8 años. Expuse en la Fiesta del Poncho.", rubrosIds: [5, 6] },
+            codigo: 200
+        }),
+        request({
+            nombre: "❌ 409 - Pedro intenta corregir otra vez",
+            metodo: "PUT", camino: "/api/artesanos/me/solicitud", token: TOKEN_PEDRO,
+            body: { trayectoria: "Otra trayectoria" },
+            codigo: 409
+        }),
+        request({
+            nombre: "✅ 200 - Admin aprueba la solicitud corregida",
+            metodo: "PATCH", camino: "/api/artesanos/PEGAR_ID_PEDRO/solicitud", token: TOKEN_ADMIN,
+            body: { estado: "APROBADO" },
+            codigo: 200
+        }),
+        request({
+            nombre: "✅ 201 - Pedro ya puede cargar productos",
+            metodo: "POST", camino: "/api/productos", token: TOKEN_PEDRO,
+            body: { nombre: "Cuchara de algarrobo", descripcion: "Tallada a mano", precio: 4000, stock: 10 },
+            codigo: 201
+        })
+    ]
+};
+
 // ==========================================================
 // 3) Armado y escritura del archivo
 // ==========================================================
@@ -426,12 +526,13 @@ const flujoStands = {
 const coleccion = {
     info: {
         name: swagger.info?.title ?? "API Feria de Artesanos",
-        description: "Colección generada desde swagger-output.json con `npm run postman`. Todos los valores están escritos, sin variables.\n\n- Los textos PEGAR_... se reemplazan a mano con el token o el id que devuelve el request anterior.\n- ESCRIBIR_CONTRASEÑA_ADMIN se reemplaza por la contraseña del administrador.\n- Las carpetas 01 y 02 son los flujos de la defensa: ejecutarlas en orden.\n- Si los emails o nombres ya se usaron, volver a correr `npm run postman` y reimportar.",
+        description: "Colección generada desde swagger-output.json con `npm run postman`. Todos los valores están escritos, sin variables.\n\n- Los textos PEGAR_... se reemplazan a mano con el token o el id que devuelve el request anterior.\n- ESCRIBIR_CONTRASEÑA_ADMIN se reemplaza por la contraseña del administrador.\n- Las carpetas 01, 02 y 03 son los flujos de la defensa: ejecutarlas en orden.\n- Si los emails o nombres ya se usaron, volver a correr `npm run postman` y reimportar.",
         schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     item: [
         flujoPostulacion,
         flujoStands,
+        flujoModificaciones,
         ...[...carpetas].map(([name, item]) => ({ name, item }))
     ]
 };

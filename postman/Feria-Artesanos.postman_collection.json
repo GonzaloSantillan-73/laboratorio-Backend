@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "API Feria de Artesanos",
-    "description": "Colección generada desde swagger-output.json con `npm run postman`. Todos los valores están escritos, sin variables.\n\n- Los textos PEGAR_... se reemplazan a mano con el token o el id que devuelve el request anterior.\n- ESCRIBIR_CONTRASEÑA_ADMIN se reemplaza por la contraseña del administrador.\n- Las carpetas 01 y 02 son los flujos de la defensa: ejecutarlas en orden.\n- Si los emails o nombres ya se usaron, volver a correr `npm run postman` y reimportar.",
+    "description": "Colección generada desde swagger-output.json con `npm run postman`. Todos los valores están escritos, sin variables.\n\n- Los textos PEGAR_... se reemplazan a mano con el token o el id que devuelve el request anterior.\n- ESCRIBIR_CONTRASEÑA_ADMIN se reemplaza por la contraseña del administrador.\n- Las carpetas 01, 02 y 03 son los flujos de la defensa: ejecutarlas en orden.\n- Si los emails o nombres ya se usaron, volver a correr `npm run postman` y reimportar.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -132,7 +132,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"rubro.inexistente786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    99999\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"rubro.inexistente911505@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    99999\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -180,7 +180,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez911505@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -229,7 +229,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez911505@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -277,7 +277,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"incorrecta\"\n}",
+              "raw": "{\n  \"email\": \"laura.gomez911505@correo.com\",\n  \"password\": \"incorrecta\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -325,7 +325,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"Clave12345\"\n}",
+              "raw": "{\n  \"email\": \"laura.gomez911505@correo.com\",\n  \"password\": \"Clave12345\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1164,7 +1164,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón Norte 786628\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón Norte 911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1219,7 +1219,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón Norte 786628\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón Norte 911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1273,7 +1273,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1786,\n  \"y\": 1628\n}",
+              "raw": "{\n  \"x\": 1911,\n  \"y\": 1505\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1328,7 +1328,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1786,\n  \"y\": 1628\n}",
+              "raw": "{\n  \"x\": 1911,\n  \"y\": 1505\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1700,7 +1700,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1787,\n  \"y\": 1629\n}",
+              "raw": "{\n  \"x\": 1912,\n  \"y\": 1506\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1840,6 +1840,799 @@
                 "api",
                 "artesanos",
                 "PEGAR_ID_ARTESANO"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Flujo: El admin pide modificaciones",
+      "description": "El administrador no aprueba ni rechaza: pide modificaciones. El postulante ve su solicitud, la corrige y vuelve a PENDIENTE; recién ahí el admin la aprueba. Ejecutar en orden.\n\nReemplazar a mano: PEGAR_TOKEN_ADMIN, PEGAR_TOKEN_PEDRO y PEGAR_ID_PEDRO.",
+      "item": [
+        {
+          "name": "✅ 200 - Login administrador (copiar el token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@ponchoferia.com\",\n  \"password\": \"ESCRIBIR_CONTRASEÑA_ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "description": "Escribir la contraseña del admin. Copiar el token de la respuesta y pegarlo donde dice PEGAR_TOKEN_ADMIN (pestaña Authorization)."
+          }
+        },
+        {
+          "name": "✅ 201 - Pedro se postula (copiar artesano.id)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Pedro\",\n  \"apellido\": \"Ruiz\",\n  \"email\": \"pedro.ruiz911505@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Maderas del Ambato\",\n  \"trayectoria\": \"Tallo madera\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    5\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios/postulacion",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "usuarios",
+                "postulacion"
+              ]
+            },
+            "description": "Copiar artesano.id de la respuesta: se usa en lugar de PEGAR_ID_PEDRO."
+          }
+        },
+        {
+          "name": "✅ 200 - Login de Pedro (copiar el token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pedro.ruiz911505@correo.com\",\n  \"password\": \"Clave12345\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "description": "Copiar el token de la respuesta y pegarlo donde dice PEGAR_TOKEN_PEDRO."
+          }
+        },
+        {
+          "name": "✅ 200 - Pedro consulta su solicitud (PENDIENTE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ 409 - Pedro intenta corregir sin que se lo pidan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trayectoria\": \"Tallo madera hace 8 años\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ 200 - Admin pide MODIFICACIONES",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_ADMIN",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"MODIFICACIONES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_PEDRO/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "PEGAR_ID_PEDRO",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ 200 - Pedro ve que le pidieron MODIFICACIONES",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ 403 - Pedro todavía no puede cargar productos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cuchara de algarrobo\",\n  \"descripcion\": \"Tallada a mano\",\n  \"precio\": 4000,\n  \"stock\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/productos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "productos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ 400 - Corregir sin enviar datos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ 400 - Corregir enviando el estado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trayectoria\": \"Tallo madera hace 8 años\",\n  \"estadoSolicitud\": \"APROBADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ 404 - Corregir con un rubro inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rubrosIds\": [\n    99999\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ 200 - Pedro corrige su solicitud (vuelve a PENDIENTE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trayectoria\": \"Tallo madera hace 8 años. Expuse en la Fiesta del Poncho.\",\n  \"rubrosIds\": [\n    5,\n    6\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ 409 - Pedro intenta corregir otra vez",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trayectoria\": \"Otra trayectoria\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ 200 - Admin aprueba la solicitud corregida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_ADMIN",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_PEDRO/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "PEGAR_ID_PEDRO",
+                "solicitud"
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ 201 - Pedro ya puede cargar productos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_PEDRO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Cuchara de algarrobo\",\n  \"descripcion\": \"Tallada a mano\",\n  \"precio\": 4000,\n  \"stock\": 10\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/productos",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "productos"
               ]
             }
           }
@@ -2093,6 +2886,86 @@
       "name": "Solicitudes",
       "item": [
         {
+          "name": "Consultar mi solicitud",
+          "event": [],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_ARTESANO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            },
+            "description": "JWT y cuenta activa. No requiere el rol ARTESANO: el postulante ve en qué estado está su solicitud."
+          }
+        },
+        {
+          "name": "Corregir mi solicitud",
+          "event": [],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_ARTESANO",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"trayectoria\": \"10 años trabajando la cerámica. Expuse en ferias de Catamarca y Tucumán.\",\n  \"rubrosIds\": [\n    2\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/artesanos/me/solicitud",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "artesanos",
+                "me",
+                "solicitud"
+              ]
+            },
+            "description": "JWT y cuenta activa. Solo si el administrador pidió MODIFICACIONES. Todos los campos son opcionales (al menos uno). La solicitud vuelve a PENDIENTE."
+          }
+        },
+        {
           "name": "Listar solicitudes de artesanos",
           "event": [],
           "request": {
@@ -2207,7 +3080,7 @@
                 "solicitud"
               ]
             },
-            "description": "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO."
+            "description": "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO. Con MODIFICACIONES la solicitud queda abierta hasta que el postulante la corrige (PUT /api/artesanos/me/solicitud) y vuelve a PENDIENTE."
           }
         },
         {
@@ -2233,7 +3106,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura911505@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3019,7 +3892,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan786628@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan911505@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3128,7 +4001,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.editado786628@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.editado911505@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3277,7 +4150,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"López\",\n  \"email\": \"admin786628@feria.com\",\n  \"password\": \"Admin1234\"\n}",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"López\",\n  \"email\": \"admin911505@feria.com\",\n  \"password\": \"Admin1234\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3525,7 +4398,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"ROL_786628\"\n}",
+              "raw": "{\n  \"nombre\": \"ROL_911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3593,7 +4466,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"ROL_EDITADO_786628\"\n}",
+              "raw": "{\n  \"nombre\": \"ROL_EDITADO_911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3697,7 +4570,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Rubro 786628\"\n}",
+              "raw": "{\n  \"nombre\": \"Rubro 911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3765,7 +4638,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Rubro editado 786628\"\n}",
+              "raw": "{\n  \"nombre\": \"Rubro editado 911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3869,7 +4742,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón 786628\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón 911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3937,7 +4810,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón editado 786628\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón editado 911505\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4041,7 +4914,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1796,\n  \"y\": 1638\n}",
+              "raw": "{\n  \"x\": 1921,\n  \"y\": 1515\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4109,7 +4982,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1806,\n  \"y\": 1648\n}",
+              "raw": "{\n  \"x\": 1931,\n  \"y\": 1525\n}",
               "options": {
                 "raw": {
                   "language": "json"

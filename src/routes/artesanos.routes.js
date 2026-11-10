@@ -7,6 +7,7 @@ import {
     eliminarArtesanoId,
     consultarMiArtesano,
     resolverSolicitud,
+    modificarMiSolicitud,
     obtenerSolicitudes
 } from '../controllers/artesanos.controllers.js'
 import {
@@ -18,7 +19,7 @@ import { validarId } from "../middlewares/validarId.middleware.js";
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js";
 import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js";
 import { validarBody } from "../middlewares/validacion.middleware.js";
-import { resolverSolicitudSchema } from "../validators/artesanos.schemas.js";
+import { resolverSolicitudSchema, modificarSolicitudSchema } from "../validators/artesanos.schemas.js";
 
 const router = Router()
 
@@ -65,6 +66,46 @@ router.get("/me", /* #swagger.tags = ["Artesanos"]
     cargarContextoUsuario,
     autorizarRoles("ARTESANO"),
     consultarMiArtesano);
+
+router.get("/me/solicitud", /* #swagger.tags = ["Solicitudes"]
+    #swagger.summary = "Consultar mi solicitud"
+    #swagger.description = "JWT y cuenta activa. No requiere el rol ARTESANO: el postulante ve en qué estado está su solicitud."
+    #swagger.auto = false
+    #swagger.responses[200] = { description: "Datos y estado de la solicitud propia.",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/MiArtesano" } } } }
+    #swagger.responses[400] = { description: "Cabecera Bearer mal formada." }
+    #swagger.responses[401] = { description: "Token ausente, inválido, vencido o revocado; cuenta inexistente." }
+    #swagger.responses[403] = { description: "Cuenta inactiva." }
+    #swagger.responses[404] = { description: "La cuenta no tiene una solicitud de artesano." }
+    */
+    // sin autorizarRoles: el postulante todavia no tiene el rol ARTESANO
+    autenticarUsuario,
+    cargarContextoUsuario,
+    consultarMiArtesano); // reusa el mismo controller de /me
+
+router.put("/me/solicitud", /* #swagger.tags = ["Solicitudes"]
+    #swagger.summary = "Corregir mi solicitud"
+    #swagger.description = "JWT y cuenta activa. Solo si el administrador pidió MODIFICACIONES. Todos los campos son opcionales (al menos uno). La solicitud vuelve a PENDIENTE."
+    #swagger.auto = false
+    #swagger.requestBody = { required: true,
+        content: { "application/json": { schema: { $ref: "#/components/schemas/ModificarSolicitud" } } } }
+    #swagger.responses[200] = { description: "Solicitud corregida, vuelve a PENDIENTE.",
+        content: { "application/json": { schema: { $ref: "#/components/schemas/MiArtesano" } } } }
+    #swagger.responses[400] = { description: "Cuerpo inválido o vacío, o cabecera Bearer mal formada." }
+    #swagger.responses[401] = { description: "Token ausente, inválido, vencido o revocado; cuenta inexistente." }
+    #swagger.responses[403] = { description: "Cuenta inactiva." }
+    #swagger.responses[404] = { description: "Sin solicitud de artesano, o rubro o localidad inexistente." }
+    #swagger.responses[409] = { description: "La solicitud no está en estado MODIFICACIONES.",
+        content: { "application/json": {
+            schema: { $ref: "#/components/schemas/ErrorApi" },
+            example: { mensaje: "Solo se puede modificar la solicitud cuando el administrador pide modificaciones." }
+        } } }
+    */
+    // solo pide estar logueado, el resto lo controla el service
+    autenticarUsuario,
+    cargarContextoUsuario,
+    validarBody(modificarSolicitudSchema, "Los datos enviados para la solicitud son inválidos."),
+    modificarMiSolicitud);
 
 router.get('/solicitudes', /* #swagger.tags = ["Solicitudes"]
     #swagger.summary = "Listar solicitudes de artesanos"
@@ -146,7 +187,7 @@ router.put('/:id', /* #swagger.tags = ["Artesanos"]
 
 router.patch('/:id/solicitud', /* #swagger.tags = ["Solicitudes"]
     #swagger.summary = "Resolver la solicitud de un artesano"
-    #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO."
+    #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO. Con MODIFICACIONES la solicitud queda abierta hasta que el postulante la corrige (PUT /api/artesanos/me/solicitud) y vuelve a PENDIENTE."
     #swagger.auto = false
     #swagger.parameters['id'] = { in: 'path', required: true, description: 'ID del artesano.',
         '@schema': { type: 'integer', minimum: 1 } }

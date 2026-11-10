@@ -198,6 +198,103 @@
         ]
       }
     },
+    "/api/artesanos/me/solicitud": {
+      "get": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Consultar mi solicitud",
+        "description": "JWT y cuenta activa. No requiere el rol ARTESANO: el postulante ve en qué estado está su solicitud.",
+        "responses": {
+          "200": {
+            "description": "Datos y estado de la solicitud propia.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MiArtesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva."
+          },
+          "404": {
+            "description": "La cuenta no tiene una solicitud de artesano."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Solicitudes"
+        ],
+        "summary": "Corregir mi solicitud",
+        "description": "JWT y cuenta activa. Solo si el administrador pidió MODIFICACIONES. Todos los campos son opcionales (al menos uno). La solicitud vuelve a PENDIENTE.",
+        "responses": {
+          "200": {
+            "description": "Solicitud corregida, vuelve a PENDIENTE.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MiArtesano"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cuerpo inválido o vacío, o cabecera Bearer mal formada."
+          },
+          "401": {
+            "description": "Token ausente, inválido, vencido o revocado; cuenta inexistente."
+          },
+          "403": {
+            "description": "Cuenta inactiva."
+          },
+          "404": {
+            "description": "Sin solicitud de artesano, o rubro o localidad inexistente."
+          },
+          "409": {
+            "description": "La solicitud no está en estado MODIFICACIONES.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                },
+                "example": {
+                  "mensaje": "Solo se puede modificar la solicitud cuando el administrador pide modificaciones."
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModificarSolicitud"
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/artesanos/solicitudes": {
       "get": {
         "tags": [
@@ -465,7 +562,7 @@
           "Solicitudes"
         ],
         "summary": "Resolver la solicitud de un artesano",
-        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO.",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO. Con MODIFICACIONES la solicitud queda abierta hasta que el postulante la corrige (PUT /api/artesanos/me/solicitud) y vuelve a PENDIENTE.",
         "parameters": [
           {
             "name": "id",
@@ -3155,6 +3252,40 @@
           "usuario": {
             "$ref": "#/components/schemas/Usuario"
           }
+        }
+      },
+      "ModificarSolicitud": {
+        "type": "object",
+        "properties": {
+          "nombreEmprendimiento": {
+            "type": "string",
+            "minLength": 1
+          },
+          "trayectoria": {
+            "type": "string",
+            "minLength": 1
+          },
+          "localidadId": {
+            "type": "string",
+            "pattern": "^\\d+$"
+          },
+          "rubrosIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "additionalProperties": false,
+        "example": {
+          "trayectoria": "10 años trabajando la cerámica. Expuse en ferias de Catamarca y Tucumán.",
+          "rubrosIds": [
+            2
+          ]
         }
       },
       "NuevaPostulacion": {
