@@ -28,6 +28,24 @@ const verificarCoordenada = async (coordenadaId, standId) => {
     }
 }
 
+// Verifica que el artesano exista y no tenga ya otro stand asignado
+const verificarArtesano = async (artesanoId, standId) => {
+    const artesano = await prisma.artesano.findUnique({
+        where: { id: artesanoId },
+        include: { stand: true }
+    })
+    if (!artesano) {
+        const error = new Error("El artesano especificado no existe.");
+        error.status = 404;
+        throw error;
+    }
+    if (artesano.stand && artesano.stand.id !== standId) {
+        const error = new Error("El artesano ya tiene un stand asignado.");
+        error.status = 409;
+        throw error;
+    }
+}
+
 export const obtenerStandsService = async () => {
     return await prisma.stand.findMany({
         include: { artesano: true, pabellon: true, coordenada: true },
@@ -52,28 +70,18 @@ export const obtenerStandPorIdService = async (id) => {
 export const crearStandService = async (crearStandDto) => {
     await verificarPabellon(crearStandDto.pabellonId)
     await verificarCoordenada(crearStandDto.coordenadaId)
-    // Si se envía un artesanoId, verificamos que exista y no tenga ya un stand asignado
     if (crearStandDto.artesanoId) {
-        const artesano = await prisma.artesano.findUnique({
-            where: { id: crearStandDto.artesanoId },
-            include: { stand: true }
-        });
+        await verificarArtesano(crearStandDto.artesanoId)
+    }
 
-        if (!artesano) {
-            const error = new Error("El artesano especificado no existe.");
-            error.status = 404;
-            throw error;
-        }
-
-        if (artesano.stand) {
-            const error = new Error("El artesano ya tiene un stand asignado.");
-            error.status = 409;
-            throw error;
-        }
+    // el estado no lo manda el cliente: si tiene artesano está OCUPADO, si no DISPONIBLE
+    let estado = "DISPONIBLE"
+    if (crearStandDto.artesanoId) {
+        estado = "OCUPADO"
     }
 
     return await prisma.stand.create({
-        data: crearStandDto,
+        data: { ...crearStandDto, estado },
         include: { artesano: true, pabellon: true, coordenada: true },
     });
 };
@@ -85,10 +93,16 @@ export const actualizarStandService = async (id, actualizarStandDto) => {
     if (actualizarStandDto.coordenadaId) {
         await verificarCoordenada(actualizarStandDto.coordenadaId, Number(id))
     }
+    const data = { ...actualizarStandDto }
+    // si se le asigna un artesano, el stand pasa a estar OCUPADO
+    if (actualizarStandDto.artesanoId) {
+        await verificarArtesano(actualizarStandDto.artesanoId, Number(id))
+        data.estado = "OCUPADO"
+    }
     try {
         return await prisma.stand.update({
             where: { id: Number(id) },
-            data: actualizarStandDto,
+            data: data,
             include: { artesano: true, pabellon: true, coordenada: true },
         });
     } catch (error) {

@@ -65,7 +65,7 @@ router.get('/:id', /* #swagger.tags = ["Stands"]
 
 router.post('/', /* #swagger.tags = ["Stands"]
     #swagger.summary = "Crear un stand"
-    #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR."
+    #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR. El estado no se envía: queda OCUPADO si se asigna un artesano y DISPONIBLE si no."
     #swagger.auto = false
     #swagger.requestBody = { required: true,
         content: { "application/json": { schema: { $ref: "#/components/schemas/NuevoStand" } } } }
@@ -87,7 +87,7 @@ router.post('/', /* #swagger.tags = ["Stands"]
 
 router.put('/:id', /* #swagger.tags = ["Stands"]
     #swagger.summary = "Modificar un stand"
-    #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales."
+    #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales. El estado no se envía: si se asigna un artesano el stand pasa a OCUPADO."
     #swagger.auto = false
     #swagger.parameters['id'] = { in: 'path', required: true, description: 'ID del stand.',
         '@schema': { type: 'integer', minimum: 1 } }
@@ -98,8 +98,8 @@ router.put('/:id', /* #swagger.tags = ["Stands"]
     #swagger.responses[400] = { description: "ID o cuerpo inválido, o cabecera Bearer mal formada." }
     #swagger.responses[401] = { description: "Token ausente, inválido, vencido o revocado; cuenta inexistente." }
     #swagger.responses[403] = { description: "Cuenta inactiva o rol ADMINISTRADOR requerido." }
-    #swagger.responses[404] = { description: "Stand, pabellón o coordenada inexistente." }
-    #swagger.responses[409] = { description: "La coordenada ya está ocupada por otro stand o conflicto de datos." }
+    #swagger.responses[404] = { description: "Stand, pabellón, coordenada o artesano inexistente." }
+    #swagger.responses[409] = { description: "La coordenada ya está ocupada por otro stand o el artesano ya tiene un stand." }
     */
     ...controlesAdministrador, validarId,
     validarBody(actualizarStandSchema, "Los datos enviados para la actualización del stand son inválidos."),

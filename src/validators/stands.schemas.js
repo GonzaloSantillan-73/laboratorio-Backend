@@ -4,9 +4,8 @@ export const crearStandSchema = z.object({
     pabellonId: z.number().int().positive("El ID del pabellón debe ser un número entero positivo"),
     sector: z.string().trim().min(1, "El sector es obligatorio"),
     coordenadaId: z.number().int().positive("El ID de la coordenada debe ser un número entero positivo"),
-    estado: z.enum(["DISPONIBLE", "OCUPADO"]).default("DISPONIBLE"),
     artesanoId: z.number().int().positive("El ID del artesano debe ser un número entero positivo").optional(),
-});
+}).strict(); // el estado no se manda: lo calcula el service según tenga artesano o no
 
 export const actualizarStandSchema = crearStandSchema.partial();
 

@@ -636,7 +636,7 @@
           "Stands"
         ],
         "summary": "Crear un stand",
-        "description": "JWT, cuenta activa y rol ADMINISTRADOR.",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. El estado no se envía: queda OCUPADO si se asigna un artesano y DISPONIBLE si no.",
         "responses": {
           "201": {
             "description": "Stand creado.",
@@ -735,7 +735,7 @@
           "Stands"
         ],
         "summary": "Modificar un stand",
-        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales.",
+        "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales. El estado no se envía: si se asigna un artesano el stand pasa a OCUPADO.",
         "parameters": [
           {
             "name": "id",
@@ -769,10 +769,10 @@
             "description": "Cuenta inactiva o rol ADMINISTRADOR requerido."
           },
           "404": {
-            "description": "Stand, pabellón o coordenada inexistente."
+            "description": "Stand, pabellón, coordenada o artesano inexistente."
           },
           "409": {
-            "description": "La coordenada ya está ocupada por otro stand o conflicto de datos."
+            "description": "La coordenada ya está ocupada por otro stand o el artesano ya tiene un stand."
           }
         },
         "security": [
@@ -2724,14 +2724,6 @@
             "exclusiveMinimum": true,
             "maximum": 9007199254740991
           },
-          "estado": {
-            "default": "DISPONIBLE",
-            "type": "string",
-            "enum": [
-              "DISPONIBLE",
-              "OCUPADO"
-            ]
-          },
           "artesanoId": {
             "type": "integer",
             "minimum": 0,
@@ -2739,8 +2731,9 @@
             "maximum": 9007199254740991
           }
         },
+        "additionalProperties": false,
         "example": {
-          "estado": "OCUPADO",
+          "sector": "B",
           "artesanoId": 2
         }
       },
@@ -3355,14 +3348,6 @@
             "exclusiveMinimum": true,
             "maximum": 9007199254740991
           },
-          "estado": {
-            "default": "DISPONIBLE",
-            "type": "string",
-            "enum": [
-              "DISPONIBLE",
-              "OCUPADO"
-            ]
-          },
           "artesanoId": {
             "type": "integer",
             "minimum": 0,
@@ -3375,11 +3360,12 @@
           "sector",
           "coordenadaId"
         ],
+        "additionalProperties": false,
         "example": {
           "pabellonId": 1,
           "sector": "A",
           "coordenadaId": 4,
-          "estado": "DISPONIBLE"
+          "artesanoId": 2
         }
       },
       "NuevoUsuario": {

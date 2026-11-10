@@ -132,7 +132,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"rubro.inexistente870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    99999\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"rubro.inexistente786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    99999\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -180,7 +180,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -229,7 +229,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -277,7 +277,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"incorrecta\"\n}",
+              "raw": "{\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"incorrecta\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -325,7 +325,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"Clave12345\"\n}",
+              "raw": "{\n  \"email\": \"laura.gomez786628@correo.com\",\n  \"password\": \"Clave12345\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1164,7 +1164,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón Norte 870503\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón Norte 786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1219,7 +1219,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón Norte 870503\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón Norte 786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1273,7 +1273,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1870,\n  \"y\": 1503\n}",
+              "raw": "{\n  \"x\": 1786,\n  \"y\": 1628\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1328,7 +1328,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1870,\n  \"y\": 1503\n}",
+              "raw": "{\n  \"x\": 1786,\n  \"y\": 1628\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1451,6 +1451,60 @@
           }
         },
         {
+          "name": "❌ 400 - Stand enviando el estado (lo calcula la API)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "PEGAR_TOKEN_ADMIN",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA,\n  \"estado\": \"DISPONIBLE\",\n  \"artesanoId\": PEGAR_ID_ARTESANO\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "3000",
+              "path": [
+                "api",
+                "stands"
+              ]
+            }
+          }
+        },
+        {
           "name": "❌ 404 - Stand en pabellón inexistente",
           "event": [
             {
@@ -1505,7 +1559,7 @@
           }
         },
         {
-          "name": "✅ 201 - Crear stand asignado al artesano (copiar id)",
+          "name": "✅ 201 - Crear stand asignado al artesano (queda OCUPADO, copiar id)",
           "event": [
             {
               "listen": "test",
@@ -1537,7 +1591,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA,\n  \"estado\": \"OCUPADO\",\n  \"artesanoId\": PEGAR_ID_ARTESANO\n}",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA,\n  \"artesanoId\": PEGAR_ID_ARTESANO\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1646,7 +1700,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1871,\n  \"y\": 1504\n}",
+              "raw": "{\n  \"x\": 1787,\n  \"y\": 1629\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2179,7 +2233,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura786628@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2293,7 +2347,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA,\n  \"estado\": \"DISPONIBLE\"\n}",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2312,7 +2366,7 @@
                 "stands"
               ]
             },
-            "description": "JWT, cuenta activa y rol ADMINISTRADOR."
+            "description": "JWT, cuenta activa y rol ADMINISTRADOR. El estado no se envía: queda OCUPADO si se asigna un artesano y DISPONIBLE si no."
           }
         },
         {
@@ -2363,7 +2417,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"estado\": \"OCUPADO\"\n}",
+              "raw": "{\n  \"sector\": \"B\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2383,7 +2437,7 @@
                 "PEGAR_ID_STAND"
               ]
             },
-            "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales."
+            "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales. El estado no se envía: si se asigna un artesano el stand pasa a OCUPADO."
           }
         },
         {
@@ -2965,7 +3019,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan870503@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan786628@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3074,7 +3128,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.editado870503@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.editado786628@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3223,7 +3277,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"López\",\n  \"email\": \"admin870503@feria.com\",\n  \"password\": \"Admin1234\"\n}",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"López\",\n  \"email\": \"admin786628@feria.com\",\n  \"password\": \"Admin1234\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3471,7 +3525,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"ROL_870503\"\n}",
+              "raw": "{\n  \"nombre\": \"ROL_786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3539,7 +3593,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"ROL_EDITADO_870503\"\n}",
+              "raw": "{\n  \"nombre\": \"ROL_EDITADO_786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3643,7 +3697,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Rubro 870503\"\n}",
+              "raw": "{\n  \"nombre\": \"Rubro 786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3711,7 +3765,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Rubro editado 870503\"\n}",
+              "raw": "{\n  \"nombre\": \"Rubro editado 786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3815,7 +3869,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón 870503\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón 786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3883,7 +3937,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón editado 870503\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón editado 786628\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3987,7 +4041,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1880,\n  \"y\": 1513\n}",
+              "raw": "{\n  \"x\": 1796,\n  \"y\": 1638\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4055,7 +4109,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": 1890,\n  \"y\": 1523\n}",
+              "raw": "{\n  \"x\": 1806,\n  \"y\": 1648\n}",
               "options": {
                 "raw": {
                   "language": "json"

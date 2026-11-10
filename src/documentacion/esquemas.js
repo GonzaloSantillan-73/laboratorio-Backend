@@ -97,12 +97,12 @@ export const NuevoProducto = {
 
 export const NuevoStand = {
     ...z.toJSONSchema(crearStandSchema, opciones),
-    example: { pabellonId: 1, sector: "A", coordenadaId: 4, estado: "DISPONIBLE" }
+    example: { pabellonId: 1, sector: "A", coordenadaId: 4, artesanoId: 2 }
 };
 
 export const ActualizarStand = {
     ...z.toJSONSchema(actualizarStandSchema, opciones),
-    example: { estado: "OCUPADO", artesanoId: 2 }
+    example: { sector: "B", artesanoId: 2 }
 };
 
 export const NuevoRubro = {

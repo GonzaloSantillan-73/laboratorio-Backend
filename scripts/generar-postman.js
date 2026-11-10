@@ -117,8 +117,8 @@ const bodiesExtra = {
     "POST /api/usuarios/asignar-artesano": '{\n  "usuarioId": "PEGAR_ID_USUARIO",\n  "nombreEmprendimiento": "Tejidos Norteños",\n  "trayectoria": "Tejedora desde 2015",\n  "localidadId": "' + LOCALIDAD_ID + '",\n  "rubrosIds": [3]\n}',
     "POST /api/artesanos/": '{\n  "usuarioId": "PEGAR_ID_USUARIO",\n  "nombreEmprendimiento": "Cerámica del Valle",\n  "trayectoria": "10 años trabajando la cerámica",\n  "localidadId": "' + LOCALIDAD_ID + '",\n  "rubrosIds": [1, 2]\n}',
     "PUT /api/productos/{id}": { nombre: "Vasija de barro grande", descripcion: "Vasija pintada a mano", precio: 18000, stock: 3 },
-    "POST /api/stands/": '{\n  "pabellonId": PEGAR_ID_PABELLON,\n  "sector": "A",\n  "coordenadaId": PEGAR_ID_COORDENADA,\n  "estado": "DISPONIBLE"\n}',
-    "PUT /api/stands/{id}": { estado: "OCUPADO" }
+    "POST /api/stands/": '{\n  "pabellonId": PEGAR_ID_PABELLON,\n  "sector": "A",\n  "coordenadaId": PEGAR_ID_COORDENADA\n}',
+    "PUT /api/stands/{id}": { sector: "B" }
 };
 
 // Qué token usa cada endpoint (sale de la descripción / resumen de Swagger)
@@ -369,15 +369,21 @@ const flujoStands = {
             codigo: 400
         }),
         request({
+            nombre: "❌ 400 - Stand enviando el estado (lo calcula la API)",
+            metodo: "POST", camino: "/api/stands", token: TOKEN_ADMIN,
+            body: '{\n  "pabellonId": PEGAR_ID_PABELLON,\n  "sector": "A",\n  "coordenadaId": PEGAR_ID_COORDENADA,\n  "estado": "DISPONIBLE",\n  "artesanoId": PEGAR_ID_ARTESANO\n}',
+            codigo: 400
+        }),
+        request({
             nombre: "❌ 404 - Stand en pabellón inexistente",
             metodo: "POST", camino: "/api/stands", token: TOKEN_ADMIN,
             body: '{\n  "pabellonId": 999999,\n  "sector": "A",\n  "coordenadaId": PEGAR_ID_COORDENADA\n}',
             codigo: 404
         }),
         request({
-            nombre: "✅ 201 - Crear stand asignado al artesano (copiar id)",
+            nombre: "✅ 201 - Crear stand asignado al artesano (queda OCUPADO, copiar id)",
             metodo: "POST", camino: "/api/stands", token: TOKEN_ADMIN,
-            body: '{\n  "pabellonId": PEGAR_ID_PABELLON,\n  "sector": "A",\n  "coordenadaId": PEGAR_ID_COORDENADA,\n  "estado": "OCUPADO",\n  "artesanoId": PEGAR_ID_ARTESANO\n}',
+            body: '{\n  "pabellonId": PEGAR_ID_PABELLON,\n  "sector": "A",\n  "coordenadaId": PEGAR_ID_COORDENADA,\n  "artesanoId": PEGAR_ID_ARTESANO\n}',
             codigo: 201,
             descripcion: "Copiar el id de la respuesta: se usa en lugar de PEGAR_ID_STAND."
         }),
