@@ -9,7 +9,8 @@
     "docs": "node generar-docs.js",
     "test": "node --test tests/productos.test.js tests/productos-schema.test.js",
     "db:test:preparar": "node --env-file=.env.test node_modules/prisma/build/index.js migrate deploy --config prisma7.config.ts",
-    "test:integracion": "node --env-file=.env.test --test tests/productos-integracion.test.js"
+    "test:integracion": "node --env-file=.env.test --test tests/productos-integracion.test.js",
+    "postman": "node scripts/generar-postman.js"
   },
   "keywords": [],
   "author": "",

@@ -34,7 +34,7 @@ export const NuevaPostulacion = {
     example: {
         nombre: "Laura", apellido: "Gómez", email: "laura@correo.com",
         password: "Clave12345", nombreEmprendimiento: "Cerámica del Valle",
-        trayectoria: "10 años trabajando la cerámica", localidadId: "10049010000",
+        trayectoria: "10 años trabajando la cerámica", localidadId: "10049030000",
         rubrosIds: [1, 2]
     }
 };
@@ -57,7 +57,7 @@ export const AsignarArtesano = {
     example: {
         usuarioId: "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
         nombreEmprendimiento: "Tejidos Norteños", trayectoria: "Tejedora desde 2015",
-        localidadId: "10049010000", rubrosIds: [3]
+        localidadId: "10049030000", rubrosIds: [3]
     }
 };
 
@@ -76,7 +76,7 @@ export const NuevoArtesano = {
     example: {
         usuarioId: "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
         nombreEmprendimiento: "Cerámica del Valle", trayectoria: "10 años trabajando la cerámica",
-        localidadId: "10049010000", rubrosIds: [1, 2]
+        localidadId: "10049030000", rubrosIds: [1, 2]
     }
 };
 
@@ -318,7 +318,7 @@ export const Artesano = {
     example: {
         id: 2, usuarioId: "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b",
         nombreEmprendimiento: "Cerámica del Valle", trayectoria: "10 años trabajando la cerámica",
-        localidadId: "10049010000", estadoSolicitud: "APROBADO",
+        localidadId: "10049030000", estadoSolicitud: "APROBADO",
         createdAt: "2026-10-20T12:00:00.000Z", updatedAt: "2026-10-20T12:00:00.000Z",
         usuario: { id: "3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b", nombre: "Laura", apellido: "Gómez", email: "laura@correo.com" },
         rubros: [{ artesanoId: 2, rubroId: 1, rubro: { id: 1, nombre: "Cerámica" } }]
