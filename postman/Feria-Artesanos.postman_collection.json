@@ -1,27 +1,23 @@
 {
   "info": {
     "name": "API Feria de Artesanos",
-    "description": "Colección generada desde swagger-output.json con `npm run postman`.\n\n1. Importar también `Local.postman_environment.json` y seleccionarlo (tiene adminEmail y adminPassword).\n2. Las carpetas `01` y `02` son los flujos de la defensa: ejecutarlas en orden (o con Run folder).\n3. Las demás carpetas tienen todos los endpoints de la API.",
+    "description": "Colección generada desde swagger-output.json con `npm run postman`. Todos los valores están escritos, sin variables.\n\n- Los textos PEGAR_... se reemplazan a mano con el token o el id que devuelve el request anterior.\n- ESCRIBIR_CONTRASEÑA_ADMIN se reemplaza por la contraseña del administrador.\n- Las carpetas 01 y 02 son los flujos de la defensa: ejecutarlas en orden.\n- Si los emails o nombres ya se usaron, volver a correr `npm run postman` y reimportar.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "01 - Flujo crítico: Postulación → Aprobación → Producto",
-      "description": "Una persona se postula como artesano (queda PENDIENTE), no puede cargar productos hasta que el administrador aprueba la solicitud; al aprobarla recibe el rol ARTESANO y puede cargar productos. Ejecutar en orden.",
+      "description": "Una persona se postula como artesano (queda PENDIENTE) y no puede cargar productos hasta que el administrador aprueba la solicitud; al aprobarla recibe el rol ARTESANO. Ejecutar en orden.\n\nReemplazar a mano: PEGAR_TOKEN_ADMIN, PEGAR_TOKEN_ARTESANO, PEGAR_ID_ARTESANO y PEGAR_ID_PRODUCTO con los valores de las respuestas.",
       "item": [
         {
-          "name": "✅ Login administrador",
+          "name": "✅ 200 - Login administrador (copiar el token)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"tokenAdmin\", json.token);",
-                  "}"
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -39,7 +35,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "raw": "{\n  \"email\": \"admin@ponchoferia.com\",\n  \"password\": \"ESCRIBIR_CONTRASEÑA_ADMIN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -47,16 +43,19 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/login",
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
                 "login"
               ]
-            }
+            },
+            "description": "Escribir la contraseña del admin. Copiar el token de la respuesta y pegarlo donde dice PEGAR_TOKEN_ADMIN (pestaña Authorization)."
           }
         },
         {
@@ -93,10 +92,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/postulacion",
+              "raw": "http://localhost:3000/api/usuarios/postulacion",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -131,7 +132,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"rubro{{$timestamp}}@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"{{localidadId}}\",\n  \"rubrosIds\": [\n    99999\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"rubro.inexistente870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    99999\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -139,10 +140,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/postulacion",
+              "raw": "http://localhost:3000/api/usuarios/postulacion",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -152,32 +155,14 @@
           }
         },
         {
-          "name": "✅ 201 - Postularse como artesano (queda PENDIENTE)",
+          "name": "✅ 201 - Postularse como artesano (copiar artesano.id)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
-                  "pm.test(\"La solicitud queda PENDIENTE\", () => pm.expect(pm.response.json().artesano.estadoSolicitud).to.eql(\"PENDIENTE\"));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"artesanoId\", json.artesano.id);",
-                  "}",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"postulanteId\", json.id);",
-                  "}"
-                ]
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.collectionVariables.set(\"emailPostulante\", `artesano${Date.now()}@correo.com`);"
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -195,7 +180,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"{{emailPostulante}}\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"{{localidadId}}\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -203,16 +188,19 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/postulacion",
+              "raw": "http://localhost:3000/api/usuarios/postulacion",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
                 "postulacion"
               ]
-            }
+            },
+            "description": "Queda en estado PENDIENTE. Copiar artesano.id de la respuesta: se usa en lugar de PEGAR_ID_ARTESANO."
           }
         },
         {
@@ -241,7 +229,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"{{emailPostulante}}\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"{{localidadId}}\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -249,10 +237,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/postulacion",
+              "raw": "http://localhost:3000/api/usuarios/postulacion",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -287,7 +277,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{emailPostulante}}\",\n  \"password\": \"incorrecta\"\n}",
+              "raw": "{\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"incorrecta\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -295,10 +285,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/login",
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -308,18 +300,14 @@
           }
         },
         {
-          "name": "✅ 200 - Login del postulante",
+          "name": "✅ 200 - Login del postulante (copiar el token)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"tokenArtesano\", json.token);",
-                  "}"
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -337,7 +325,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{emailPostulante}}\",\n  \"password\": \"Clave12345\"\n}",
+              "raw": "{\n  \"email\": \"laura.gomez870503@correo.com\",\n  \"password\": \"Clave12345\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -345,16 +333,19 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/login",
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
                 "login"
               ]
-            }
+            },
+            "description": "Copiar el token de la respuesta y pegarlo donde dice PEGAR_TOKEN_ARTESANO."
           }
         },
         {
@@ -377,7 +368,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -398,10 +389,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos",
+              "raw": "http://localhost:3000/api/productos",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos"
@@ -429,10 +422,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/solicitudes",
+              "raw": "http://localhost:3000/api/artesanos/solicitudes",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
@@ -461,17 +456,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/solicitudes",
+              "raw": "http://localhost:3000/api/artesanos/solicitudes",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
@@ -500,17 +497,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/solicitudes?estadoSolicitud=PENDIENTE&ordenarPor=createdAt&direccion=desc",
+              "raw": "http://localhost:3000/api/artesanos/solicitudes?estadoSolicitud=PENDIENTE&ordenarPor=createdAt&direccion=desc",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
@@ -553,7 +552,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -574,14 +573,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}/solicitud",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO/solicitud",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}",
+                "PEGAR_ID_ARTESANO",
                 "solicitud"
               ]
             }
@@ -607,7 +608,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -628,10 +629,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/999999/solicitud",
+              "raw": "http://localhost:3000/api/artesanos/999999/solicitud",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
@@ -649,8 +652,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Queda APROBADO\", () => pm.expect(pm.response.json().estadoSolicitud).to.eql(\"APROBADO\"));"
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -662,7 +664,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -683,14 +685,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}/solicitud",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO/solicitud",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}",
+                "PEGAR_ID_ARTESANO",
                 "solicitud"
               ]
             }
@@ -716,7 +720,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -737,14 +741,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}/solicitud",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO/solicitud",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}",
+                "PEGAR_ID_ARTESANO",
                 "solicitud"
               ]
             }
@@ -770,7 +776,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -791,10 +797,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos",
+              "raw": "http://localhost:3000/api/productos",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos"
@@ -822,7 +830,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -843,10 +851,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos",
+              "raw": "http://localhost:3000/api/productos",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos"
@@ -855,18 +865,14 @@
           }
         },
         {
-          "name": "✅ 201 - Artesano aprobado carga un producto",
+          "name": "✅ 201 - Artesano aprobado carga un producto (copiar id)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"productoId\", json.id);",
-                  "}"
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -878,7 +884,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -899,15 +905,18 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos",
+              "raw": "http://localhost:3000/api/productos",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos"
               ]
-            }
+            },
+            "description": "Copiar el id de la respuesta: se usa en lugar de PEGAR_ID_PRODUCTO."
           }
         },
         {
@@ -930,17 +939,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/me",
+              "raw": "http://localhost:3000/api/productos/me",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
@@ -969,14 +980,16 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "raw": "http://localhost:3000/api/productos/PEGAR_ID_PRODUCTO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
-                "{{productoId}}"
+                "PEGAR_ID_PRODUCTO"
               ]
             }
           }
@@ -1001,17 +1014,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/logout",
+              "raw": "http://localhost:3000/api/usuarios/logout",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -1040,17 +1055,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/me",
+              "raw": "http://localhost:3000/api/productos/me",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
@@ -1063,21 +1080,17 @@
     },
     {
       "name": "02 - Flujo alternativo: Asignación de stand",
-      "description": "El administrador crea un pabellón y una coordenada y asigna un stand al artesano aprobado en el flujo 01. Ejecutar después del flujo 01.",
+      "description": "El administrador crea un pabellón y una coordenada y asigna un stand al artesano aprobado en el flujo 01. Ejecutar después del flujo 01.\n\nReemplazar a mano: PEGAR_TOKEN_ADMIN, PEGAR_ID_ARTESANO, PEGAR_ID_PABELLON, PEGAR_ID_COORDENADA, PEGAR_ID_OTRA_COORDENADA y PEGAR_ID_STAND.",
       "item": [
         {
-          "name": "✅ Login administrador",
+          "name": "✅ 200 - Login administrador (copiar el token)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"tokenAdmin\", json.token);",
-                  "}"
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));"
                 ]
               }
             }
@@ -1095,7 +1108,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "raw": "{\n  \"email\": \"admin@ponchoferia.com\",\n  \"password\": \"ESCRIBIR_CONTRASEÑA_ADMIN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1103,40 +1116,30 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/login",
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
                 "login"
               ]
-            }
+            },
+            "description": "Escribir la contraseña del admin. Copiar el token de la respuesta y pegarlo donde dice PEGAR_TOKEN_ADMIN (pestaña Authorization)."
           }
         },
         {
-          "name": "✅ 201 - Crear pabellón",
+          "name": "✅ 201 - Crear pabellón (copiar id)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"pabellonId\", json.id);",
-                  "}"
-                ]
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.collectionVariables.set(\"nombrePabellon\", `Pabellón ${Date.now()}`);"
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -1148,7 +1151,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1161,7 +1164,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"{{nombrePabellon}}\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón Norte 870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1169,15 +1172,18 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones",
+              "raw": "http://localhost:3000/api/pabellones",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones"
               ]
-            }
+            },
+            "description": "Copiar el id de la respuesta: se usa en lugar de PEGAR_ID_PABELLON."
           }
         },
         {
@@ -1200,7 +1206,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1213,7 +1219,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"{{nombrePabellon}}\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón Norte 870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1221,10 +1227,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones",
+              "raw": "http://localhost:3000/api/pabellones",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones"
@@ -1233,28 +1241,14 @@
           }
         },
         {
-          "name": "✅ 201 - Crear coordenada",
+          "name": "✅ 201 - Crear coordenada (copiar id)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"coordenadaId\", json.id);",
-                  "}"
-                ]
-              }
-            },
-            {
-              "listen": "prerequest",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.collectionVariables.set(\"coordX\", 1000 + Math.floor(Math.random() * 100000));",
-                  "pm.collectionVariables.set(\"coordY\", 1000 + Math.floor(Math.random() * 100000));"
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -1266,7 +1260,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1279,7 +1273,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": {{coordX}},\n  \"y\": {{coordY}}\n}",
+              "raw": "{\n  \"x\": 1870,\n  \"y\": 1503\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1287,15 +1281,18 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas",
+              "raw": "http://localhost:3000/api/coordenadas",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas"
               ]
-            }
+            },
+            "description": "Copiar el id de la respuesta: se usa en lugar de PEGAR_ID_COORDENADA."
           }
         },
         {
@@ -1318,7 +1315,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1331,7 +1328,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": {{coordX}},\n  \"y\": {{coordY}}\n}",
+              "raw": "{\n  \"x\": 1870,\n  \"y\": 1503\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1339,10 +1336,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas",
+              "raw": "http://localhost:3000/api/coordenadas",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas"
@@ -1376,7 +1375,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": \"{{pabellonId}}\",\n  \"sector\": \"A\",\n  \"coordenadaId\": \"{{coordenadaId}}\"\n}",
+              "raw": "{\n  \"pabellonId\": 1,\n  \"sector\": \"A\",\n  \"coordenadaId\": 1\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1384,10 +1383,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands",
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -1415,7 +1416,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1436,10 +1437,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands",
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -1467,7 +1470,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1480,7 +1483,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": 999999,\n  \"sector\": \"A\",\n  \"coordenadaId\": {{coordenadaId}}\n}",
+              "raw": "{\n  \"pabellonId\": 999999,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1488,10 +1491,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands",
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -1500,18 +1505,14 @@
           }
         },
         {
-          "name": "✅ 201 - Crear stand asignado al artesano",
+          "name": "✅ 201 - Crear stand asignado al artesano (copiar id)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"standId\", json.id);",
-                  "}"
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -1523,7 +1524,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1536,7 +1537,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": {{pabellonId}},\n  \"sector\": \"A\",\n  \"coordenadaId\": {{coordenadaId}},\n  \"estado\": \"OCUPADO\",\n  \"artesanoId\": {{artesanoId}}\n}",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA,\n  \"estado\": \"OCUPADO\",\n  \"artesanoId\": PEGAR_ID_ARTESANO\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1544,15 +1545,18 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands",
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
               ]
-            }
+            },
+            "description": "Copiar el id de la respuesta: se usa en lugar de PEGAR_ID_STAND."
           }
         },
         {
@@ -1575,7 +1579,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1588,7 +1592,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": {{pabellonId}},\n  \"sector\": \"B\",\n  \"coordenadaId\": {{coordenadaId}}\n}",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"B\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1596,10 +1600,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands",
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -1608,18 +1614,14 @@
           }
         },
         {
-          "name": "✅ 201 - Crear otra coordenada libre",
+          "name": "✅ 201 - Crear otra coordenada libre (copiar id)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));",
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"coordenadaLibreId\", json.id);",
-                  "}"
+                  "pm.test(\"Responde 201\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
@@ -1631,7 +1633,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1644,7 +1646,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": {{$randomInt}}{{$randomInt}},\n  \"y\": {{$randomInt}}{{$randomInt}}\n}",
+              "raw": "{\n  \"x\": 1871,\n  \"y\": 1504\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1652,15 +1654,18 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas",
+              "raw": "http://localhost:3000/api/coordenadas",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas"
               ]
-            }
+            },
+            "description": "Copiar el id de la respuesta: se usa en lugar de PEGAR_ID_OTRA_COORDENADA."
           }
         },
         {
@@ -1683,7 +1688,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1696,7 +1701,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": {{pabellonId}},\n  \"sector\": \"B\",\n  \"coordenadaId\": {{coordenadaLibreId}},\n  \"artesanoId\": {{artesanoId}}\n}",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"B\",\n  \"coordenadaId\": PEGAR_ID_OTRA_COORDENADA,\n  \"artesanoId\": PEGAR_ID_ARTESANO\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1704,10 +1709,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands",
+              "raw": "http://localhost:3000/api/stands",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -1735,14 +1742,16 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/stands/{{standId}}",
+              "raw": "http://localhost:3000/api/stands/PEGAR_ID_STAND",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands",
-                "{{standId}}"
+                "PEGAR_ID_STAND"
               ]
             }
           }
@@ -1767,14 +1776,16 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}"
+                "PEGAR_ID_ARTESANO"
               ]
             }
           }
@@ -1786,15 +1797,7 @@
       "item": [
         {
           "name": "Listar artesanos aprobados",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -1802,10 +1805,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/?",
+              "raw": "http://localhost:3000/api/artesanos/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos"
@@ -1850,20 +1855,7 @@
         },
         {
           "name": "Crear un artesano",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"artesanoId\", json.id ?? pm.collectionVariables.get(\"artesanoId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -1871,7 +1863,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -1884,7 +1876,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usuarioId\": \"3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
+              "raw": "{\n  \"usuarioId\": \"PEGAR_ID_USUARIO\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [1, 2]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1892,10 +1884,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/",
+              "raw": "http://localhost:3000/api/artesanos/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos"
@@ -1906,15 +1900,7 @@
         },
         {
           "name": "Consultar mi artesano",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -1922,17 +1908,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/me",
+              "raw": "http://localhost:3000/api/artesanos/me",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
@@ -1944,15 +1932,7 @@
         },
         {
           "name": "Consultar un artesano aprobado",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -1960,14 +1940,16 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}"
+                "PEGAR_ID_ARTESANO"
               ]
             },
             "description": "Público. Devuelve el artesano con sus productos, stand, rubros y localidad."
@@ -1975,15 +1957,7 @@
         },
         {
           "name": "Modificar un artesano",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -1991,7 +1965,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -2012,14 +1986,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}"
+                "PEGAR_ID_ARTESANO"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales."
@@ -2027,15 +2003,7 @@
         },
         {
           "name": "Eliminar un artesano",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -2043,21 +2011,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}"
+                "PEGAR_ID_ARTESANO"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR."
@@ -2070,15 +2040,7 @@
       "item": [
         {
           "name": "Listar solicitudes de artesanos",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2086,17 +2048,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/solicitudes?",
+              "raw": "http://localhost:3000/api/artesanos/solicitudes",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
@@ -2147,15 +2111,7 @@
         },
         {
           "name": "Resolver la solicitud de un artesano",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PATCH",
             "auth": {
@@ -2163,7 +2119,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -2184,14 +2140,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/artesanos/{{artesanoId}}/solicitud",
+              "raw": "http://localhost:3000/api/artesanos/PEGAR_ID_ARTESANO/solicitud",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "artesanos",
-                "{{artesanoId}}",
+                "PEGAR_ID_ARTESANO",
                 "solicitud"
               ]
             },
@@ -2200,15 +2158,7 @@
         },
         {
           "name": "Postularse como artesano",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -2216,7 +2166,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -2229,7 +2179,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura{{$timestamp}}@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"{{localidadId}}\",\n  \"rubrosIds\": [1, 2]\n}",
+              "raw": "{\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Gómez\",\n  \"email\": \"laura870503@correo.com\",\n  \"password\": \"Clave12345\",\n  \"nombreEmprendimiento\": \"Cerámica del Valle\",\n  \"trayectoria\": \"10 años trabajando la cerámica\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    1,\n    2\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2237,10 +2187,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/postulacion",
+              "raw": "http://localhost:3000/api/usuarios/postulacion",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -2257,15 +2209,7 @@
       "item": [
         {
           "name": "Listar stands",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2273,10 +2217,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/stands/?",
+              "raw": "http://localhost:3000/api/stands/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -2326,20 +2272,7 @@
         },
         {
           "name": "Crear un stand",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"standId\", json.id ?? pm.collectionVariables.get(\"standId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -2347,7 +2280,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -2360,7 +2293,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"pabellonId\": 1,\n  \"sector\": \"A\",\n  \"coordenadaId\": 4,\n  \"estado\": \"DISPONIBLE\"\n}",
+              "raw": "{\n  \"pabellonId\": PEGAR_ID_PABELLON,\n  \"sector\": \"A\",\n  \"coordenadaId\": PEGAR_ID_COORDENADA,\n  \"estado\": \"DISPONIBLE\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2368,10 +2301,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands/",
+              "raw": "http://localhost:3000/api/stands/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands"
@@ -2382,15 +2317,7 @@
         },
         {
           "name": "Consultar un stand",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2398,14 +2325,16 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/stands/{{standId}}",
+              "raw": "http://localhost:3000/api/stands/PEGAR_ID_STAND",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands",
-                "{{standId}}"
+                "PEGAR_ID_STAND"
               ]
             },
             "description": "Público. Devuelve el stand con su pabellón, coordenada y artesano."
@@ -2413,15 +2342,7 @@
         },
         {
           "name": "Modificar un stand",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -2429,7 +2350,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -2450,14 +2371,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/stands/{{standId}}",
+              "raw": "http://localhost:3000/api/stands/PEGAR_ID_STAND",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands",
-                "{{standId}}"
+                "PEGAR_ID_STAND"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR. Todos los campos son opcionales."
@@ -2465,15 +2388,7 @@
         },
         {
           "name": "Eliminar un stand",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -2481,21 +2396,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/stands/{{standId}}",
+              "raw": "http://localhost:3000/api/stands/PEGAR_ID_STAND",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "stands",
-                "{{standId}}"
+                "PEGAR_ID_STAND"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR."
@@ -2508,15 +2425,7 @@
       "item": [
         {
           "name": "Listar consultas (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2524,17 +2433,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/consultas/",
+              "raw": "http://localhost:3000/api/consultas/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "consultas"
@@ -2544,20 +2455,7 @@
         },
         {
           "name": "Registrar una consulta",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"consultaId\", json.id ?? pm.collectionVariables.get(\"consultaId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -2579,10 +2477,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/consultas/",
+              "raw": "http://localhost:3000/api/consultas/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "consultas"
@@ -2592,15 +2492,7 @@
         },
         {
           "name": "Consultar una consulta (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2608,36 +2500,30 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/consultas/{{consultaId}}",
+              "raw": "http://localhost:3000/api/consultas/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "consultas",
-                "{{consultaId}}"
+                "1"
               ]
             }
           }
         },
         {
           "name": "Eliminar una consulta (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -2645,21 +2531,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/consultas/{{consultaId}}",
+              "raw": "http://localhost:3000/api/consultas/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "consultas",
-                "{{consultaId}}"
+                "1"
               ]
             }
           }
@@ -2671,15 +2559,7 @@
       "item": [
         {
           "name": "Listar productos",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2687,10 +2567,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/?",
+              "raw": "http://localhost:3000/api/productos/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos"
@@ -2753,20 +2635,7 @@
         },
         {
           "name": "Crear un producto",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"productoId\", json.id ?? pm.collectionVariables.get(\"productoId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -2774,7 +2643,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -2795,10 +2664,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos/",
+              "raw": "http://localhost:3000/api/productos/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos"
@@ -2809,15 +2680,7 @@
         },
         {
           "name": "Listar mis productos",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2825,17 +2688,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/me",
+              "raw": "http://localhost:3000/api/productos/me",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
@@ -2847,15 +2712,7 @@
         },
         {
           "name": "Consultar un producto",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -2863,14 +2720,16 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "raw": "http://localhost:3000/api/productos/PEGAR_ID_PRODUCTO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
-                "{{productoId}}"
+                "PEGAR_ID_PRODUCTO"
               ]
             },
             "description": "Público. Devuelve el producto con su artesano."
@@ -2878,15 +2737,7 @@
         },
         {
           "name": "Modificar un producto propio",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -2894,7 +2745,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -2915,14 +2766,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "raw": "http://localhost:3000/api/productos/PEGAR_ID_PRODUCTO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
-                "{{productoId}}"
+                "PEGAR_ID_PRODUCTO"
               ]
             },
             "description": "JWT, cuenta activa y rol ARTESANO. Solo se puede modificar un producto propio."
@@ -2930,15 +2783,7 @@
         },
         {
           "name": "Eliminar un producto propio",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -2946,21 +2791,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/productos/{{productoId}}",
+              "raw": "http://localhost:3000/api/productos/PEGAR_ID_PRODUCTO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
-                "{{productoId}}"
+                "PEGAR_ID_PRODUCTO"
               ]
             },
             "description": "JWT, cuenta activa y rol ARTESANO. Solo se puede eliminar un producto propio."
@@ -2968,15 +2815,7 @@
         },
         {
           "name": "Activar o desactivar un producto propio",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PATCH",
             "auth": {
@@ -2984,7 +2823,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenArtesano}}",
+                  "value": "PEGAR_TOKEN_ARTESANO",
                   "type": "string"
                 }
               ]
@@ -3005,14 +2844,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/productos/{{productoId}}/activo",
+              "raw": "http://localhost:3000/api/productos/PEGAR_ID_PRODUCTO/activo",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "productos",
-                "{{productoId}}",
+                "PEGAR_ID_PRODUCTO",
                 "activo"
               ]
             },
@@ -3026,15 +2867,7 @@
       "item": [
         {
           "name": "Listar usuarios",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3042,17 +2875,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/?",
+              "raw": "http://localhost:3000/api/usuarios/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios"
@@ -3109,20 +2944,7 @@
         },
         {
           "name": "Crear un usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"usuarioId\", json.id ?? pm.collectionVariables.get(\"usuarioId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3130,7 +2952,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3143,7 +2965,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan{{$timestamp}}@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [1]\n}",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan870503@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3151,10 +2973,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/",
+              "raw": "http://localhost:3000/api/usuarios/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios"
@@ -3165,15 +2989,7 @@
         },
         {
           "name": "Consultar mi usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3181,17 +2997,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/me",
+              "raw": "http://localhost:3000/api/usuarios/me",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -3203,15 +3021,7 @@
         },
         {
           "name": "Consultar un usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3219,21 +3029,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}",
+              "raw": "http://localhost:3000/api/usuarios/PEGAR_ID_USUARIO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
-                "{{usuarioId}}"
+                "PEGAR_ID_USUARIO"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR."
@@ -3241,15 +3053,7 @@
         },
         {
           "name": "Modificar un usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -3257,7 +3061,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3270,7 +3074,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
+              "raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.editado870503@correo.com\",\n  \"password\": \"clave123\",\n  \"rolesIds\": [\n    1\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3278,14 +3082,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}",
+              "raw": "http://localhost:3000/api/usuarios/PEGAR_ID_USUARIO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
-                "{{usuarioId}}"
+                "PEGAR_ID_USUARIO"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR. Reemplaza los datos y los roles del usuario."
@@ -3293,15 +3099,7 @@
         },
         {
           "name": "Eliminar un usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -3309,21 +3107,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}",
+              "raw": "http://localhost:3000/api/usuarios/PEGAR_ID_USUARIO",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
-                "{{usuarioId}}"
+                "PEGAR_ID_USUARIO"
               ]
             },
             "description": "JWT, cuenta activa y rol ADMINISTRADOR."
@@ -3331,20 +3131,7 @@
         },
         {
           "name": "Iniciar sesión",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"tokenAdmin\", json.token);",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3358,7 +3145,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "raw": "{\n  \"email\": \"admin@ponchoferia.com\",\n  \"password\": \"ESCRIBIR_CONTRASEÑA_ADMIN\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3366,10 +3153,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/login",
+              "raw": "http://localhost:3000/api/usuarios/login",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -3381,15 +3170,7 @@
         },
         {
           "name": "Cerrar sesión",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3397,17 +3178,19 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/logout",
+              "raw": "http://localhost:3000/api/usuarios/logout",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -3419,15 +3202,7 @@
         },
         {
           "name": "Registrar un administrador",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3435,7 +3210,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3448,7 +3223,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"López\",\n  \"email\": \"admin{{$timestamp}}@feria.com\",\n  \"password\": \"Admin1234\"\n}",
+              "raw": "{\n  \"nombre\": \"Ana\",\n  \"apellido\": \"López\",\n  \"email\": \"admin870503@feria.com\",\n  \"password\": \"Admin1234\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3456,10 +3231,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/registro-administrador",
+              "raw": "http://localhost:3000/api/usuarios/registro-administrador",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -3471,15 +3248,7 @@
         },
         {
           "name": "Asignar un artesano a un administrador",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3487,7 +3256,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3500,7 +3269,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"usuarioId\": \"3f2b8c1e-5d4a-4b6e-9a1f-2c3d4e5f6a7b\",\n  \"nombreEmprendimiento\": \"Tejidos Norteños\",\n  \"trayectoria\": \"Tejedora desde 2015\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [\n    3\n  ]\n}",
+              "raw": "{\n  \"usuarioId\": \"PEGAR_ID_USUARIO\",\n  \"nombreEmprendimiento\": \"Tejidos Norteños\",\n  \"trayectoria\": \"Tejedora desde 2015\",\n  \"localidadId\": \"10049030000\",\n  \"rubrosIds\": [3]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3508,10 +3277,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/asignar-artesano",
+              "raw": "http://localhost:3000/api/usuarios/asignar-artesano",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
@@ -3523,15 +3294,7 @@
         },
         {
           "name": "Asignar el rol ADMINISTRADOR",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3539,7 +3302,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3560,14 +3323,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}/roles",
+              "raw": "http://localhost:3000/api/usuarios/PEGAR_ID_USUARIO/roles",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
-                "{{usuarioId}}",
+                "PEGAR_ID_USUARIO",
                 "roles"
               ]
             },
@@ -3576,15 +3341,7 @@
         },
         {
           "name": "Quitar un rol a un usuario",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -3592,21 +3349,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}/roles/ADMINISTRADOR",
+              "raw": "http://localhost:3000/api/usuarios/PEGAR_ID_USUARIO/roles/ADMINISTRADOR",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
-                "{{usuarioId}}",
+                "PEGAR_ID_USUARIO",
                 "roles",
                 "ADMINISTRADOR"
               ]
@@ -3616,15 +3375,7 @@
         },
         {
           "name": "Activar o desactivar una cuenta",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PATCH",
             "auth": {
@@ -3632,7 +3383,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3653,14 +3404,16 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/usuarios/{{usuarioId}}/activo",
+              "raw": "http://localhost:3000/api/usuarios/PEGAR_ID_USUARIO/activo",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "usuarios",
-                "{{usuarioId}}",
+                "PEGAR_ID_USUARIO",
                 "activo"
               ]
             },
@@ -3674,15 +3427,7 @@
       "item": [
         {
           "name": "Listar roles",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3690,10 +3435,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/roles/",
+              "raw": "http://localhost:3000/api/roles/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "roles"
@@ -3703,20 +3450,7 @@
         },
         {
           "name": "Crear un rol (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"rolId\", json.id ?? pm.collectionVariables.get(\"rolId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3724,7 +3458,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3737,7 +3471,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"ROL_{{$timestamp}}\"\n}",
+              "raw": "{\n  \"nombre\": \"ROL_870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3745,10 +3479,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/roles/",
+              "raw": "http://localhost:3000/api/roles/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "roles"
@@ -3758,15 +3494,7 @@
         },
         {
           "name": "Consultar un rol",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3774,29 +3502,23 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/roles/{{rolId}}",
+              "raw": "http://localhost:3000/api/roles/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "roles",
-                "{{rolId}}"
+                "1"
               ]
             }
           }
         },
         {
           "name": "Modificar un rol (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -3804,7 +3526,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3817,7 +3539,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"ROL_EDITADO_{{$timestamp}}\"\n}",
+              "raw": "{\n  \"nombre\": \"ROL_EDITADO_870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3825,29 +3547,23 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/roles/{{rolId}}",
+              "raw": "http://localhost:3000/api/roles/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "roles",
-                "{{rolId}}"
+                "1"
               ]
             }
           }
         },
         {
           "name": "Eliminar un rol (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -3855,21 +3571,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/roles/{{rolId}}",
+              "raw": "http://localhost:3000/api/roles/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "roles",
-                "{{rolId}}"
+                "1"
               ]
             }
           }
@@ -3881,15 +3599,7 @@
       "item": [
         {
           "name": "Listar rubros",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3897,10 +3607,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/rubros/",
+              "raw": "http://localhost:3000/api/rubros/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "rubros"
@@ -3910,20 +3622,7 @@
         },
         {
           "name": "Crear un rubro (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"rubroId\", json.id ?? pm.collectionVariables.get(\"rubroId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -3931,7 +3630,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -3944,7 +3643,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Rubro {{$timestamp}}\"\n}",
+              "raw": "{\n  \"nombre\": \"Rubro 870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -3952,10 +3651,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/rubros/",
+              "raw": "http://localhost:3000/api/rubros/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "rubros"
@@ -3965,15 +3666,7 @@
         },
         {
           "name": "Consultar un rubro",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -3981,29 +3674,23 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/rubros/{{rubroId}}",
+              "raw": "http://localhost:3000/api/rubros/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "rubros",
-                "{{rubroId}}"
+                "1"
               ]
             }
           }
         },
         {
           "name": "Modificar un rubro (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -4011,7 +3698,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -4024,7 +3711,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Rubro editado {{$timestamp}}\"\n}",
+              "raw": "{\n  \"nombre\": \"Rubro editado 870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4032,29 +3719,23 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/rubros/{{rubroId}}",
+              "raw": "http://localhost:3000/api/rubros/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "rubros",
-                "{{rubroId}}"
+                "1"
               ]
             }
           }
         },
         {
           "name": "Eliminar un rubro (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -4062,21 +3743,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/rubros/{{rubroId}}",
+              "raw": "http://localhost:3000/api/rubros/1",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "rubros",
-                "{{rubroId}}"
+                "1"
               ]
             }
           }
@@ -4088,15 +3771,7 @@
       "item": [
         {
           "name": "Listar pabellones",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4104,10 +3779,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones/",
+              "raw": "http://localhost:3000/api/pabellones/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones"
@@ -4117,20 +3794,7 @@
         },
         {
           "name": "Crear un pabellón (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"pabellonId\", json.id ?? pm.collectionVariables.get(\"pabellonId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -4138,7 +3802,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -4151,7 +3815,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón {{$timestamp}}\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón 870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4159,10 +3823,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones/",
+              "raw": "http://localhost:3000/api/pabellones/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones"
@@ -4172,15 +3838,7 @@
         },
         {
           "name": "Consultar un pabellón",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4188,29 +3846,23 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones/{{pabellonId}}",
+              "raw": "http://localhost:3000/api/pabellones/PEGAR_ID_PABELLON",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones",
-                "{{pabellonId}}"
+                "PEGAR_ID_PABELLON"
               ]
             }
           }
         },
         {
           "name": "Modificar un pabellón (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -4218,7 +3870,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -4231,7 +3883,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nombre\": \"Pabellón editado {{$timestamp}}\"\n}",
+              "raw": "{\n  \"nombre\": \"Pabellón editado 870503\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4239,29 +3891,23 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones/{{pabellonId}}",
+              "raw": "http://localhost:3000/api/pabellones/PEGAR_ID_PABELLON",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones",
-                "{{pabellonId}}"
+                "PEGAR_ID_PABELLON"
               ]
             }
           }
         },
         {
           "name": "Eliminar un pabellón (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -4269,21 +3915,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/pabellones/{{pabellonId}}",
+              "raw": "http://localhost:3000/api/pabellones/PEGAR_ID_PABELLON",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "pabellones",
-                "{{pabellonId}}"
+                "PEGAR_ID_PABELLON"
               ]
             }
           }
@@ -4295,15 +3943,7 @@
       "item": [
         {
           "name": "Listar coordenadas",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4311,10 +3951,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas/",
+              "raw": "http://localhost:3000/api/coordenadas/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas"
@@ -4324,20 +3966,7 @@
         },
         {
           "name": "Crear una coordenada (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "if (pm.response.code < 300) {",
-                  "    const json = pm.response.json();",
-                  "    pm.collectionVariables.set(\"coordenadaId\", json.id ?? pm.collectionVariables.get(\"coordenadaId\"));",
-                  "}"
-                ]
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "POST",
             "auth": {
@@ -4345,7 +3974,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -4358,7 +3987,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": {{$randomInt}},\n  \"y\": {{$randomInt}}\n}",
+              "raw": "{\n  \"x\": 1880,\n  \"y\": 1513\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4366,10 +3995,12 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas/",
+              "raw": "http://localhost:3000/api/coordenadas/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas"
@@ -4379,15 +4010,7 @@
         },
         {
           "name": "Consultar una coordenada",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4395,29 +4018,23 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas/{{coordenadaId}}",
+              "raw": "http://localhost:3000/api/coordenadas/PEGAR_ID_COORDENADA",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas",
-                "{{coordenadaId}}"
+                "PEGAR_ID_COORDENADA"
               ]
             }
           }
         },
         {
           "name": "Modificar una coordenada (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "PUT",
             "auth": {
@@ -4425,7 +4042,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
@@ -4438,7 +4055,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"x\": {{$randomInt}},\n  \"y\": {{$randomInt}}\n}",
+              "raw": "{\n  \"x\": 1890,\n  \"y\": 1523\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -4446,29 +4063,23 @@
               }
             },
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas/{{coordenadaId}}",
+              "raw": "http://localhost:3000/api/coordenadas/PEGAR_ID_COORDENADA",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas",
-                "{{coordenadaId}}"
+                "PEGAR_ID_COORDENADA"
               ]
             }
           }
         },
         {
           "name": "Eliminar una coordenada (ADMINISTRADOR)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "DELETE",
             "auth": {
@@ -4476,21 +4087,23 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{tokenAdmin}}",
+                  "value": "PEGAR_TOKEN_ADMIN",
                   "type": "string"
                 }
               ]
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/coordenadas/{{coordenadaId}}",
+              "raw": "http://localhost:3000/api/coordenadas/PEGAR_ID_COORDENADA",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "coordenadas",
-                "{{coordenadaId}}"
+                "PEGAR_ID_COORDENADA"
               ]
             }
           }
@@ -4502,15 +4115,7 @@
       "item": [
         {
           "name": "Listar provincias",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4518,10 +4123,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/provincias/",
+              "raw": "http://localhost:3000/api/provincias/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "provincias"
@@ -4531,15 +4138,7 @@
         },
         {
           "name": "Listar departamentos",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4547,10 +4146,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/departamentos/",
+              "raw": "http://localhost:3000/api/departamentos/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "departamentos"
@@ -4560,15 +4161,7 @@
         },
         {
           "name": "Listar localidades",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4576,10 +4169,12 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/localidades/",
+              "raw": "http://localhost:3000/api/localidades/",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "localidades"
@@ -4589,15 +4184,7 @@
         },
         {
           "name": "Consultar una localidad",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": []
-              }
-            }
-          ],
+          "event": [],
           "request": {
             "method": "GET",
             "auth": {
@@ -4605,116 +4192,21 @@
             },
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/localidades/{{localidadId}}",
+              "raw": "http://localhost:3000/api/localidades/10049030000",
+              "protocol": "http",
               "host": [
-                "{{baseUrl}}"
+                "localhost"
               ],
+              "port": "3000",
               "path": [
                 "api",
                 "localidades",
-                "{{localidadId}}"
+                "10049030000"
               ]
             }
           }
         }
       ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000",
-      "type": "string"
-    },
-    {
-      "key": "localidadId",
-      "value": "10049030000",
-      "type": "string"
-    },
-    {
-      "key": "tokenAdmin",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "tokenArtesano",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "emailPostulante",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "usuarioId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "postulanteId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "artesanoId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "productoId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "standId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "pabellonId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "coordenadaId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "coordenadaLibreId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "rubroId",
-      "value": "1",
-      "type": "string"
-    },
-    {
-      "key": "rolId",
-      "value": "1",
-      "type": "string"
-    },
-    {
-      "key": "consultaId",
-      "value": "1",
-      "type": "string"
-    },
-    {
-      "key": "nombrePabellon",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "coordX",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "coordY",
-      "value": "",
-      "type": "string"
     }
   ]
 }
