@@ -10,10 +10,11 @@ import {
     resolverSolicitudService
 } from "../services/artesanos.service.js";
 
+// next(error) manda el error al manejador central de app.js
 export const obtenerArtesanos = async (req, res, next) => {
     try {
         // el listado publico solo muestra los artesanos aprobados
-        const criteriosConsulta = { ...req.consultaArtesanos, estadoSolicitud: "APROBADO" };
+        const criteriosConsulta = { ...req.consultaValidada, estadoSolicitud: "APROBADO" };
         const resultado = await consultarArtesanosService(criteriosConsulta);
 
         return res.status(200).json(resultado);
@@ -34,7 +35,7 @@ export const obtenerArtesanosPorId = async (req, res, next) => {
 
 export const crearArtesano = async (req, res, next) => {
     try {
-        const crearArtesanoDto = req.body;
+        const crearArtesanoDto = req.bodyValidado;
         const nuevoArtesano = await crearArtesanoService(crearArtesanoDto);
         return res.status(201).json(nuevoArtesano);
     } catch (error) {
@@ -45,7 +46,7 @@ export const crearArtesano = async (req, res, next) => {
 export const actualizarArtesanoId = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const actualizarArtesanoDto = req.body;
+        const actualizarArtesanoDto = req.bodyValidado;
 
         const artesanoActualizado = await actualizarArtesanoService(id, actualizarArtesanoDto);
         return res.json(artesanoActualizado);
@@ -67,7 +68,9 @@ export const eliminarArtesanoId = async (req, res, next) => {
         return next(error);
     }
 };
+// sin try/catch: en Express 5 si la promesa falla el error va solo al manejador
 export const consultarMiArtesano = async (req, res) => {
+    // req.contextoUsuario lo carga el middleware cargarContextoUsuario
     const datos = await obtenerMiArtesano(
         req.contextoUsuario.id);
     return res.json(datos);
@@ -82,13 +85,15 @@ export const modificarMiSolicitud = async (req, res) => {
 };
 
 export const resolverSolicitud = async (req, res) => {
+    // req.bodyValidado lo deja validarBody, ya revisado por Zod
     const artesano = await resolverSolicitudService(req.params.id, req.bodyValidado.estado);
     return res.json(artesano);
 };
 
 export const obtenerSolicitudes = async (req, res, next) => {
     try {
-        const resultado = await consultarArtesanosService(req.consultaArtesanos);
+        // sin forzar APROBADO: el admin ve las solicitudes en cualquier estado
+        const resultado = await consultarArtesanosService(req.consultaValidada);
         return res.status(200).json(resultado);
     } catch (error) {
         return next(error);

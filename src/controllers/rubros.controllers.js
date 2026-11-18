@@ -3,7 +3,7 @@ import * as rubroServices from '../services/rubro.service.js'
 
 export const obtenerRubros = async (req, res, next) => {
     try {
-        const resultado = await rubroServices.consultarRubros(req.consultaRubros)
+        const resultado = await rubroServices.consultarRubros(req.consultaValidada)
         res.json(resultado)
     } catch (error) {
         next(error)
@@ -24,7 +24,7 @@ export const obtenerRubroPorId = async (req, res, next) => {
 
 export const crearRubro = async (req, res, next) => {
     try {
-        const nuevoRubro = await rubroServices.crearRubro(req.body)
+        const nuevoRubro = await rubroServices.crearRubro(req.bodyValidado)
         res.status(201).json(nuevoRubro)
     } catch (error) {
         next(error)
@@ -33,7 +33,7 @@ export const crearRubro = async (req, res, next) => {
 
 export const actualizarRubro = async (req, res, next) => {
     try {
-        const rubro = await rubroServices.actualizarRubro(req.params.id, req.body)
+        const rubro = await rubroServices.actualizarRubro(req.params.id, req.bodyValidado)
         if (!rubro) {
             return next(crearError(`No existe un rubro con ID ${req.params.id}`, 404))
         }

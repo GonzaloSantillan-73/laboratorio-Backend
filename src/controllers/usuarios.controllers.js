@@ -6,7 +6,7 @@ import { asignarArtesano } from "../services/artesanos.service.js"
 
 export const obtenerUsuarios = async (req, res, next) => {
     try {
-        const resultado = await usuarioServices.consultarUsuario(req.consultaUsuarios)
+        const resultado = await usuarioServices.consultarUsuario(req.consultaValidada)
         res.json(resultado)
     } catch (error) {
         next(error)
@@ -25,13 +25,14 @@ export const obtenerUsuarioPorId = async (req, res, next) => {
     }
 }
 
+// no consulta la base: cargarContextoUsuario ya trajo el usuario
 export const obtenerMiUsuario = async (req, res, next) => {
     return res.status(200).json({ usuario: req.contextoUsuario })
 }
 
 export const crearUsuario = async (req, res, next) => {
     try {
-        const nuevoUsuario = await usuarioServices.crearUsuario(req.body)
+        const nuevoUsuario = await usuarioServices.crearUsuario(req.bodyValidado)
         res.status(201).json(nuevoUsuario)
     } catch (error) {
         next(error)
@@ -40,7 +41,7 @@ export const crearUsuario = async (req, res, next) => {
 
 export const actualizarUsuario = async (req, res, next) => {
     try {
-        const usuario = await usuarioServices.actualizarUsuario(req.params.id, req.body)
+        const usuario = await usuarioServices.actualizarUsuario(req.params.id, req.bodyValidado)
         if (!usuario) {
             return next(crearError(`No existe un usuario con ID ${req.params.id}`, 404))
         }
@@ -70,7 +71,9 @@ export const registrarPostulacion = async (req, res) => {
 
 export const iniciarSesion = async (req, res, next) => {
     try {
-        const usuario = await usuarioServices.iniciarSesion(req.iniciarSesionDto);
+        // req.bodyValidado lo deja validarBody
+        const usuario = await usuarioServices.iniciarSesion(req.bodyValidado);
+        // credenciales correctas: se firma el JWT para las proximas peticiones
         const token = generarToken(usuario)
         return res.status(200).json({
             mensaje: "Credenciales verificadas correctamente.",

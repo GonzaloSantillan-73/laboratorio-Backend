@@ -7,7 +7,8 @@ import {
 
 export const obtenerConsultas = async (req, res, next) => {
     try {
-        const resultado = await consultarConsultasService(req.consultaConsultas);
+        // req.consultaValidada lo arma validarConsulta con los filtros validados
+        const resultado = await consultarConsultasService(req.consultaValidada);
         return res.status(200).json(resultado);
     } catch (error) {
         return next(error);
@@ -25,7 +26,7 @@ export const obtenerConsultaPorId = async (req, res, next) => {
 
 export const crearConsulta = async (req, res, next) => {
     try {
-        const nuevaConsulta = await crearConsultaService(req.body);
+        const nuevaConsulta = await crearConsultaService(req.bodyValidado);
         return res.status(201).json(nuevaConsulta);
     } catch (error) {
         return next(error);

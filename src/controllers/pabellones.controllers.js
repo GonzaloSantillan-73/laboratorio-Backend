@@ -3,7 +3,7 @@ import * as pabellonServices from '../services/pabellon.service.js'
 
 export const obtenerPabellones = async (req, res, next) => {
     try {
-        const resultado = await pabellonServices.consultarPabellones(req.consultaPabellones)
+        const resultado = await pabellonServices.consultarPabellones(req.consultaValidada)
         res.json(resultado)
     } catch (error) {
         next(error)
@@ -24,7 +24,7 @@ export const obtenerPabellonPorId = async (req, res, next) => {
 
 export const crearPabellon = async (req, res, next) => {
     try {
-        const nuevoPabellon = await pabellonServices.crearPabellon(req.body)
+        const nuevoPabellon = await pabellonServices.crearPabellon(req.bodyValidado)
         res.status(201).json(nuevoPabellon)
     } catch (error) {
         next(error)
@@ -33,7 +33,7 @@ export const crearPabellon = async (req, res, next) => {
 
 export const actualizarPabellon = async (req, res, next) => {
     try {
-        const pabellon = await pabellonServices.actualizarPabellon(req.params.id, req.body)
+        const pabellon = await pabellonServices.actualizarPabellon(req.params.id, req.bodyValidado)
         if (!pabellon) {
             return next(crearError(`No existe un pabellón con ID ${req.params.id}`, 404))
         }

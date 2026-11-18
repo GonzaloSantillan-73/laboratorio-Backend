@@ -10,19 +10,21 @@ import {
     modificarMiSolicitud,
     obtenerSolicitudes
 } from '../controllers/artesanos.controllers.js'
-import {
-    validarCreacionArtesano,
-    validarActualizacionArtesano,
-    validarConsultaArtesanos
-} from '../middlewares/artesano.middleware.js'
 import { validarId } from "../middlewares/validarId.middleware.js";
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js";
 import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js";
-import { validarBody } from "../middlewares/validacion.middleware.js";
-import { resolverSolicitudSchema, modificarSolicitudSchema } from "../validators/artesanos.schemas.js";
+import { validarBody, validarConsulta } from "../middlewares/validacion.middleware.js";
+import {
+    crearArtesanoSchema,
+    actualizarArtesanoSchema,
+    consultarArtesanosSchema,
+    resolverSolicitudSchema,
+    modificarSolicitudSchema
+} from "../validators/artesanos.schemas.js";
 
 const router = Router()
 
+// token + cuenta activa + rol; con ...controlesAdministrador se despliegan en la ruta
 const controlesAdministrador = [
     autenticarUsuario, cargarContextoUsuario,
     autorizarRoles("ADMINISTRADOR")
@@ -49,8 +51,9 @@ router.get('/', /* #swagger.tags = ["Artesanos"]
         content: { "application/json": { schema: { $ref: "#/components/schemas/ListadoArtesanos" } } } }
     #swagger.responses[400] = { description: "Parámetros de consulta inválidos." }
     */
-    validarConsultaArtesanos, obtenerArtesanos);
+    validarConsulta(consultarArtesanosSchema), obtenerArtesanos);
 
+// '/me' y '/solicitudes' van antes que '/:id', si no Express los tomaria como un id
 router.get("/me", /* #swagger.tags = ["Artesanos"]
     #swagger.summary = "Consultar mi artesano"
     #swagger.description = "JWT, cuenta activa y rol ARTESANO. Devuelve el artesano de la cuenta autenticada."
@@ -131,7 +134,7 @@ router.get('/solicitudes', /* #swagger.tags = ["Solicitudes"]
     #swagger.responses[401] = { description: "Token ausente, inválido, vencido o revocado; cuenta inexistente." }
     #swagger.responses[403] = { description: "Cuenta inactiva o rol ADMINISTRADOR requerido." }
     */
-    ...controlesAdministrador, validarConsultaArtesanos, obtenerSolicitudes);
+    ...controlesAdministrador, validarConsulta(consultarArtesanosSchema), obtenerSolicitudes);
 
 router.get('/:id', /* #swagger.tags = ["Artesanos"]
     #swagger.summary = "Consultar un artesano aprobado"
@@ -165,7 +168,7 @@ router.post('/', /* #swagger.tags = ["Artesanos"]
     #swagger.responses[404] = { description: "Usuario, rubro o localidad inexistente." }
     #swagger.responses[409] = { description: "El usuario ya tiene un artesano o conflicto de datos." }
     */
-    ...controlesAdministrador, validarCreacionArtesano, crearArtesano)
+    ...controlesAdministrador, validarBody(crearArtesanoSchema), crearArtesano)
 
 router.put('/:id', /* #swagger.tags = ["Artesanos"]
     #swagger.summary = "Modificar un artesano"
@@ -183,8 +186,9 @@ router.put('/:id', /* #swagger.tags = ["Artesanos"]
     #swagger.responses[404] = { description: "Artesano, rubro o localidad inexistente." }
     #swagger.responses[409] = { description: "Conflicto de datos (por ejemplo, el usuario ya tiene otro artesano)." }
     */
-    ...controlesAdministrador, validarId, validarActualizacionArtesano, actualizarArtesanoId)
+    ...controlesAdministrador, validarId, validarBody(actualizarArtesanoSchema, "Los datos enviados para la actualización son inválidos."), actualizarArtesanoId)
 
+// el admin aprueba, rechaza o pide modificaciones; orden: seguridad, id, body
 router.patch('/:id/solicitud', /* #swagger.tags = ["Solicitudes"]
     #swagger.summary = "Resolver la solicitud de un artesano"
     #swagger.description = "JWT, cuenta activa y rol ADMINISTRADOR. Al aprobar, el usuario recibe el rol ARTESANO. Con MODIFICACIONES la solicitud queda abierta hasta que el postulante la corrige (PUT /api/artesanos/me/solicitud) y vuelve a PENDIENTE."

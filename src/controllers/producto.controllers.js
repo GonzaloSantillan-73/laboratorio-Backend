@@ -3,7 +3,8 @@ import * as productoServices from '../services/producto.service.js'
 
 export const obtenerProductos = async (req, res, next) => {
     try {
-        const resultado = await productoServices.consultarProducto(req.consultaProductos)
+        // req.consultaValidada lo arma validarConsulta (filtros y paginacion)
+        const resultado = await productoServices.consultarProducto(req.consultaValidada)
         res.json(resultado)
     } catch (error) {
         next(error)
@@ -24,7 +25,8 @@ export const obtenerProductoPorId = async (req, res, next) => {
 
 export const crearProducto = async (req, res, next) => {
     try {
-        const nuevoProducto = await productoServices.crearProducto(req.body, req.contextoUsuario.id)
+        // el artesano sale del usuario logueado, no del body
+        const nuevoProducto = await productoServices.crearProducto(req.bodyValidado, req.contextoUsuario.id)
         res.status(201).json(nuevoProducto)
     } catch (error) {
         next(error)
@@ -33,7 +35,8 @@ export const crearProducto = async (req, res, next) => {
 
 export const actualizarProducto = async (req, res, next) => {
     try {
-        const producto = await productoServices.actualizarProducto(req.params.id, req.contextoUsuario.id, req.body)
+        // se pasa el usuario para que solo pueda tocar sus propios productos
+        const producto = await productoServices.actualizarProducto(req.params.id, req.contextoUsuario.id, req.bodyValidado)
         if (!producto) {
             return next(crearError(`No existe un producto con ID ${req.params.id}`, 404))
         }

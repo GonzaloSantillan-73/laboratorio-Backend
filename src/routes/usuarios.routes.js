@@ -3,18 +3,17 @@ import { obtenerUsuarios, obtenerUsuarioPorId, obtenerMiUsuario, crearUsuario, a
 from '../controllers/usuarios.controllers.js'
 import { agregarRol, quitarRol } from '../controllers/roles.controllers.js'
 import { actualizarActivo } from '../controllers/estado.controllers.js'
-import { validarUsuario, validarInicioSesion } from '../middlewares/validarUsuario.js'
-import { validarConsultarUsuario } from '../middlewares/validarconsultas.js'
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cerrarSesion } from "../controllers/sesiones.controllers.js"
 import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js"
-import { validarBody, validarParametros } from "../middlewares/validacion.middleware.js"
-import { registroAdminSchema, usuarioIdParametrosSchema, asignarArtesanoSchema, postulacionSchema } from "../validators/usuarios.schemas.js"
+import { validarBody, validarConsulta, validarParametros } from "../middlewares/validacion.middleware.js"
+import { usuarioSchema, iniciarSesionSchema, consultarUsuarioSchema, registroAdminSchema, usuarioIdParametrosSchema, asignarArtesanoSchema, postulacionSchema } from "../validators/usuarios.schemas.js"
 import { asignarAdministradorSchema, retirarRolParametrosSchema } from "../validators/roles.schemas.js"
 import { actualizarActivoSchema } from "../validators/estado.schemas.js"
 
 const router = express.Router()
 
+// token + cuenta activa + rol; con ...controlesAdministrador se despliegan en la ruta
 const controlesAdministrador = [
     autenticarUsuario, cargarContextoUsuario,
     autorizarRoles("ADMINISTRADOR")
@@ -46,8 +45,9 @@ router.get('/', /* #swagger.tags = ["Usuarios"]
     #swagger.responses[401] = { description: "Token ausente, inválido, vencido o revocado; cuenta inexistente." }
     #swagger.responses[403] = { description: "Cuenta inactiva o rol ADMINISTRADOR requerido." }
     */
-    ...controlesAdministrador, validarConsultarUsuario, obtenerUsuarios)
+    ...controlesAdministrador, validarConsulta(consultarUsuarioSchema, "Parámetros de consulta de usuarios inválidos."), obtenerUsuarios)
 
+// '/me' va antes que '/:id', si no Express tomaria "me" como un id
 router.get('/me', /* #swagger.tags = ["Usuarios"]
     #swagger.summary = "Consultar mi usuario"
     #swagger.description = "JWT y cuenta activa. Cualquier rol."
@@ -90,7 +90,7 @@ router.post('/', /* #swagger.tags = ["Usuarios"]
     #swagger.responses[403] = { description: "Cuenta inactiva o rol ADMINISTRADOR requerido." }
     #swagger.responses[409] = { description: "Ya existe un usuario con ese email." }
     */
-    ...controlesAdministrador, validarUsuario, crearUsuario)
+    ...controlesAdministrador, validarBody(usuarioSchema, "Datos de usuario invalidos"), crearUsuario)
 
 // Postulación pública: no requiere JWT
 router.post("/postulacion", /* #swagger.tags = ["Solicitudes"]
@@ -115,6 +115,7 @@ router.post("/postulacion", /* #swagger.tags = ["Solicitudes"]
 );
 
 router.post(
+    // publica: devuelve el token para usar en las rutas protegidas
     "/login", /* #swagger.tags = ["Usuarios"]
     #swagger.summary = "Iniciar sesión"
     #swagger.description = "Público. Devuelve el JWT para usar en el botón Authorize."
@@ -131,10 +132,11 @@ router.post(
             example: { mensaje: "Las credenciales son inválidas." }
         } } }
     */
-    validarInicioSesion,
+    validarBody(iniciarSesionSchema),
     iniciarSesion
 );
 
+// solo autenticarUsuario: alcanza con un token valido para revocarlo
 router.post("/logout", /* #swagger.tags = ["Usuarios"]
     #swagger.summary = "Cerrar sesión"
     #swagger.description = "JWT. Revoca el token enviado."
@@ -281,7 +283,7 @@ router.put('/:id', /* #swagger.tags = ["Usuarios"]
     */
     ...controlesAdministrador,
     validarParametros(usuarioIdParametrosSchema, "ID inválido."),
-    validarUsuario, actualizarUsuario)
+    validarBody(usuarioSchema, "Datos de usuario invalidos"), actualizarUsuario)
 
 router.delete('/:id', /* #swagger.tags = ["Usuarios"]
     #swagger.summary = "Eliminar un usuario"

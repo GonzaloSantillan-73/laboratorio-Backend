@@ -1,16 +1,16 @@
 import express from 'express'
 import { obtenerProductos, obtenerProductoPorId, crearProducto, actualizarProducto, eliminarProducto, actualizarActivoProducto, listarMisProductos}
 from '../controllers/producto.controllers.js'
-import { validarProducto } from '../middlewares/validarProducto.js'
 import { validarId as validarID } from '../middlewares/validarId.middleware.js'
-import { validarConsultarProducto } from '../middlewares/validarconsultas.js'
 import { autenticarUsuario } from "../middlewares/autenticacion.middleware.js"
 import { cargarContextoUsuario, autorizarRoles } from "../middlewares/autorizacion.middleware.js"
-import { validarBody } from "../middlewares/validacion.middleware.js"
+import { validarBody, validarConsulta } from "../middlewares/validacion.middleware.js"
+import { ProductoSchema, consultarProductoSchema } from "../validators/productos.schemas.js"
 import { actualizarActivoSchema } from "../validators/estado.schemas.js"
 
 const router = express.Router()
 
+// token + cuenta activa + rol ARTESANO; ...controlesArtesano los despliega en la ruta
 const controlesArtesano = [
     autenticarUsuario, cargarContextoUsuario,
     autorizarRoles("ARTESANO")
@@ -43,8 +43,9 @@ router.get('/', /* #swagger.tags = ["Productos"]
         content: { "application/json": { schema: { $ref: "#/components/schemas/ListadoProductos" } } } }
     #swagger.responses[400] = { description: "Parámetros de consulta inválidos." }
     */
-    validarConsultarProducto, obtenerProductos)
+    validarConsulta(consultarProductoSchema, "Parámetros de consulta de productos inválidos."), obtenerProductos)
 
+// '/me' va antes que '/:id', si no Express tomaria "me" como un id
 router.get('/me', /* #swagger.tags = ["Productos"]
     #swagger.summary = "Listar mis productos"
     #swagger.description = "JWT, cuenta activa y rol ARTESANO. Devuelve solo los productos del artesano autenticado."
@@ -89,8 +90,9 @@ router.post('/', /* #swagger.tags = ["Productos"]
     #swagger.responses[403] = { description: "Cuenta inactiva o rol ARTESANO requerido." }
     #swagger.responses[404] = { description: "La cuenta no tiene un artesano asociado." }
     */
-    ...controlesArtesano, validarProducto, crearProducto)
+    ...controlesArtesano, validarBody(ProductoSchema, "Datos de producto invalidos"), crearProducto)
 
+// orden: primero seguridad, despues validar id y body, al final el controller
 router.put('/:id', /* #swagger.tags = ["Productos"]
     #swagger.summary = "Modificar un producto propio"
     #swagger.description = "JWT, cuenta activa y rol ARTESANO. Solo se puede modificar un producto propio."
@@ -106,7 +108,7 @@ router.put('/:id', /* #swagger.tags = ["Productos"]
     #swagger.responses[403] = { description: "Cuenta inactiva o rol ARTESANO requerido." }
     #swagger.responses[404] = { description: "Producto inexistente o de otro artesano." }
     */
-    ...controlesArtesano, validarID, validarProducto, actualizarProducto)
+    ...controlesArtesano, validarID, validarBody(ProductoSchema, "Datos de producto invalidos"), actualizarProducto)
 
 router.patch('/:id/activo', /* #swagger.tags = ["Productos"]
     #swagger.summary = "Activar o desactivar un producto propio"
